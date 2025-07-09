@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tinyfal/src/services/auth.dart';
+import 'package:tinyfal/src/views/login/register.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -67,7 +68,9 @@ class LoginScreen extends StatelessWidget {
                   controller: emailController,
                   decoration: const InputDecoration(
                     labelText: 'Email',
-                    border: OutlineInputBorder(),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(15)),
+                    ),
                   ),
                   keyboardType: TextInputType.emailAddress,
                 ),
@@ -78,83 +81,130 @@ class LoginScreen extends StatelessWidget {
                   controller: passwordController,
                   decoration: const InputDecoration(
                     labelText: 'Password',
-                    border: OutlineInputBorder(),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(15)),
+                    ),
                   ),
                   obscureText: true,
                 ),
                 const SizedBox(height: 15),
 
                 // Login button
-                ElevatedButton(
-                  onPressed: () async {
-                    try {
-                      await signInWithEmail(
-                        emailController.text.trim(),
-                        passwordController.text,
-                      );
-                      // Optionally show success or navigate
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Login failed: $e')),
-                      );
-                    }
-                  },
-                  child: const Text(
-                    'Login',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                SizedBox(
+                  width: 180,
+                  height: 36,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      try {
+                        await signInWithEmail(
+                          emailController.text.trim(),
+                          passwordController.text,
+                        );
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Login failed: $e')),
+                        );
+                      }
+                    },
+                    child: const Text(
+                      'Sign In',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 8,
+                        horizontal: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
+                ),
+                const SizedBox(height: 20),
+
+                // Create account link
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Don't have an account? ",
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const RegisterScreen(),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        'Create one!',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ],
                 ),
 
                 const SizedBox(height: 30),
 
                 // Google Sign-In Button
-                ElevatedButton.icon(
-                  onPressed: () {
-                    // UserCredential googleCredentials;
-                    signInWithGoogle().then((value) {
-                      //googleCredentials = value;
-                      //print(googleCredentials);
-                    });
-                  },
-                  icon: const FaIcon(FontAwesomeIcons.google),
-                  label: const Text(
-                    'Google login',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // Apple Sign-In Button
-                if (true)
-                  ElevatedButton.icon(
+                SizedBox(
+                  width: 180,
+                  height: 36,
+                  child: ElevatedButton.icon(
                     onPressed: () {
-                      signInWithApple();
+                      signInWithGoogle();
                     },
-                    icon: const FaIcon(FontAwesomeIcons.apple),
+                    icon: const FaIcon(FontAwesomeIcons.google, size: 16),
                     label: const Text(
-                      ' Apple',
+                      'Sign in with Google',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 8,
+                        horizontal: 12,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                // Apple Sign-In Button
+                if (true)
+                  SizedBox(
+                    width: 180,
+                    height: 36,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        signInWithApple();
+                      },
+                      icon: const FaIcon(FontAwesomeIcons.apple, size: 16),
+                      label: const Text(
+                        'Sign in with Apple',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
                   ),

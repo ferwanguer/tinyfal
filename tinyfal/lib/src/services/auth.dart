@@ -73,6 +73,17 @@ Future<UserCredential?> signInWithEmail(String email, String password) async {
   }
 }
 
+Future<UserCredential?> registerWithEmail(String email, String password) async {
+  try {
+    final credential = await FirebaseAuth.instance
+        .createUserWithEmailAndPassword(email: email, password: password);
+    return credential;
+  } catch (e) {
+    print('Error registering with email: $e');
+    rethrow;
+  }
+}
+
 Map<String, dynamic> userCredentialToMap(UserCredential userCredential) {
   final user = userCredential.user;
   return {
