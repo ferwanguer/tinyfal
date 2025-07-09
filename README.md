@@ -24,6 +24,9 @@ We plan to introduce a **self-hosted (on-premise) version** once the platform re
 
 Stay tuned for updates as development progresses.
 
+## Docs
+
+For docs see setup.md
 
 
 
