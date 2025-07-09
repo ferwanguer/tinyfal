@@ -60,6 +60,19 @@ Future<UserCredential?> signInWithApple() async {
   }
 }
 
+Future<UserCredential?> signInWithEmail(String email, String password) async {
+  try {
+    final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+    return credential;
+  } catch (e) {
+    print('Error signing in with email: $e');
+    rethrow;
+  }
+}
+
 Map<String, dynamic> userCredentialToMap(UserCredential userCredential) {
   final user = userCredential.user;
   return {
