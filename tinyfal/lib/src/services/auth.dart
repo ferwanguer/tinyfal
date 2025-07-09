@@ -84,6 +84,15 @@ Future<UserCredential?> registerWithEmail(String email, String password) async {
   }
 }
 
+Future<void> resetPassword(String email) async {
+  try {
+    await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+  } catch (e) {
+    print('Error sending password reset email: $e');
+    rethrow;
+  }
+}
+
 Map<String, dynamic> userCredentialToMap(UserCredential userCredential) {
   final user = userCredential.user;
   return {

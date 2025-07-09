@@ -87,7 +87,46 @@ class LoginScreen extends StatelessWidget {
                   ),
                   obscureText: true,
                 ),
-                const SizedBox(height: 15),
+                const SizedBox(height: 10),
+
+                // Forgot password link
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () async {
+                      if (emailController.text.trim().isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Please enter your email first'),
+                          ),
+                        );
+                        return;
+                      }
+
+                      try {
+                        await resetPassword(emailController.text.trim());
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Password reset email sent!'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      } catch (e) {
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+                      }
+                    },
+                    child: const Text(
+                      'Forgot Password?',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 5),
 
                 // Login button
                 SizedBox(
