@@ -39,18 +39,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() {
       _isLoading = true;
     });
-
     try {
       await registerWithEmail(
         emailController.text.trim(),
         passwordController.text,
       );
 
+      // Sign out the user immediately after registration to prevent auto-login
+      await signOut();
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Registration successful! You can now sign in.'),
+            content: Text(
+              'Registration successful! Please check your email to verify your account before signing in.',
+            ),
             backgroundColor: Colors.green,
+            duration: Duration(seconds: 4),
           ),
         );
         Navigator.of(context).pop(); // Go back to login screen
@@ -201,6 +206,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     height: 50,
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _register,
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
                       child: _isLoading
                           ? const CircularProgressIndicator(color: Colors.white)
                           : const Text(
@@ -210,11 +220,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                      style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
                     ),
                   ),
 

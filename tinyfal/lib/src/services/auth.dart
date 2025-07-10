@@ -9,9 +9,9 @@ Future<UserCredential?> signInWithGoogle() async {
   if (kIsWeb) {
     GoogleAuthProvider googleProvider = GoogleAuthProvider();
 
-    googleProvider.addScope(
-      'https://www.googleapis.com/auth/contacts.readonly',
-    );
+    // googleProvider.addScope(
+    //   'https://www.googleapis.com/auth/contacts.readonly',
+    // );
     googleProvider.setCustomParameters({'login_hint': 'user@example.com'});
     // Once signed in, return the UserCredential
     return await FirebaseAuth.instance.signInWithPopup(googleProvider);
@@ -77,9 +77,27 @@ Future<UserCredential?> registerWithEmail(String email, String password) async {
   try {
     final credential = await FirebaseAuth.instance
         .createUserWithEmailAndPassword(email: email, password: password);
+
+    // Send email verification
+    if (credential.user != null && !credential.user!.emailVerified) {
+      await credential.user!.sendEmailVerification();
+    }
+
     return credential;
   } catch (e) {
     print('Error registering with email: $e');
+    rethrow;
+  }
+}
+
+Future<void> sendEmailVerification() async {
+  try {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null && !user.emailVerified) {
+      await user.sendEmailVerification();
+    }
+  } catch (e) {
+    print('Error sending email verification: $e');
     rethrow;
   }
 }
@@ -89,6 +107,18 @@ Future<void> resetPassword(String email) async {
     await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
   } catch (e) {
     print('Error sending password reset email: $e');
+    rethrow;
+  }
+}
+
+Future<void> reloadUser() async {
+  try {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      await user.reload();
+    }
+  } catch (e) {
+    print('Error reloading user: $e');
     rethrow;
   }
 }

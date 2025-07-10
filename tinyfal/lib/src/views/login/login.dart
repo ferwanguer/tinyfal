@@ -135,10 +135,44 @@ class LoginScreen extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () async {
                       try {
-                        await signInWithEmail(
+                        final credential = await signInWithEmail(
                           emailController.text.trim(),
                           passwordController.text,
                         );
+
+                        // Check if email is verified
+                        if (credential?.user != null &&
+                            !credential!.user!.emailVerified) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text(
+                                'Please verify your email before signing in. Check your inbox for the verification link.',
+                              ),
+                              action: SnackBarAction(
+                                label: 'Resend',
+                                onPressed: () async {
+                                  try {
+                                    await sendEmailVerification();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Verification email sent!',
+                                        ),
+                                        backgroundColor: Colors.green,
+                                      ),
+                                    );
+                                  } catch (e) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Error: $e')),
+                                    );
+                                  }
+                                },
+                              ),
+                            ),
+                          );
+                          // Sign out the unverified user
+                          await signOut();
+                        }
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Login failed: $e')),

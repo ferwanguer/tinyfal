@@ -11,14 +11,15 @@ class Preferences {
   String? sender;
   String? nickname;
 
-  Preferences(
-      {this.description,
-      this.web,
-      this.isEscuelaEscritores = false,
-      this.username,
-      this.sender,
-      this.nickname,
-      this.textFontSize = 14.0});
+  Preferences({
+    this.description,
+    this.web,
+    this.isEscuelaEscritores = false,
+    this.username,
+    this.sender,
+    this.nickname,
+    this.textFontSize = 14.0,
+  });
 
   static Preferences? fromFirestore(DocumentSnapshot<Object?> doc) {
     if (!doc.exists) {
@@ -28,18 +29,19 @@ class Preferences {
 
     String? sender;
     try {
-      sender = data['sender'][0] as String?;
+      sender = data['email'] as String?;
     } catch (e) {
       sender = null;
     }
 
     return Preferences(
-        description: data['description'] as String?,
-        web: data['web'] as String?,
-        isEscuelaEscritores: data['isEscuelaEscritores'] as bool? ?? false,
-        username: data['username'] as String?,
-        textFontSize: data['textFontSize'] as double? ?? 14.0,
-        nickname: data['nickname'] as String?,
-        sender: sender);
+      description: data['description'] as String?,
+      web: data['web'] as String?,
+      isEscuelaEscritores: data['isEscuelaEscritores'] as bool? ?? false,
+      username: data['username'] as String?,
+      textFontSize: data['textFontSize'] as double? ?? 14.0,
+      nickname: data['nickname'] as String?,
+      sender: sender,
+    );
   }
 }
