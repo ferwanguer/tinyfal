@@ -22,8 +22,8 @@ service cloud.firestore {
       allow read, write: if isAuthenticated() && isOwner(userId);
       
       // Escritos subcollection - user's writings/documents to be deleted
-      match /escritos/{escritoId} {
-        // Users can ONLY manage their own escritos - no sharing with other users
+      match /resources/{escritoId} {
+        // Users can ONLY manage their own resources - no sharing with other users
         allow read, write, delete: if isAuthenticated() && isOwner(userId);
       }
       
