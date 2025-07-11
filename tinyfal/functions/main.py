@@ -17,9 +17,6 @@ set_global_options(max_instances=10)
 # Initialize Firebase Admin SDK
 initialize_app()
 
-# Initialize Firestore client
-db = firestore.client()
-
 
 @https_fn.on_request()
 def ingest(req: https_fn.Request) -> https_fn.Response:
@@ -27,6 +24,8 @@ def ingest(req: https_fn.Request) -> https_fn.Response:
     Firebase function that handles POST requests with authorization tokens.
     Logs JSON data to the corresponding user's resource document.
     """
+    
+    db = firestore.client()
     
     # Only allow POST requests
     if req.method != 'POST':
@@ -123,12 +122,12 @@ def ingest(req: https_fn.Request) -> https_fn.Response:
         logs_collection.add(log_entry)
         
         # Update the main document with latest data
-        doc_ref.set({
-            "latest_data": request_data,
-            "last_updated": firestore.SERVER_TIMESTAMP,
-            "user_id": user_id,
-            "resource_id": resource_id
-        }, merge=True)
+        # doc_ref.set({
+        #     "latest_data": request_data,
+        #     "last_updated": firestore.SERVER_TIMESTAMP,
+        #     "user_id": user_id,
+        #     "resource_id": resource_id
+        # }, merge=True)
         
         return https_fn.Response(
             json.dumps({
