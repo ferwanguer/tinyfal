@@ -253,35 +253,35 @@ class LoginScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 10),
-                // Apple Sign-In Button
-                if (true)
-                  SizedBox(
-                    width: 180,
-                    height: 36,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        signInWithApple();
-                      },
-                      icon: const FaIcon(FontAwesomeIcons.apple, size: 16),
-                      label: const Text(
-                        'Sign in with Apple',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 8,
-                          horizontal: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    ),
-                  ),
 
+                // Apple Sign-In Button
+                // if (true)
+                //   SizedBox(
+                //     width: 180,
+                //     height: 36,
+                //     child: ElevatedButton.icon(
+                //       onPressed: () {
+                //         signInWithApple();
+                //       },
+                //       icon: const FaIcon(FontAwesomeIcons.apple, size: 16),
+                //       label: const Text(
+                //         'Sign in with Apple',
+                //         style: TextStyle(
+                //           fontSize: 14,
+                //           fontWeight: FontWeight.w500,
+                //         ),
+                //       ),
+                //       style: ElevatedButton.styleFrom(
+                //         padding: const EdgeInsets.symmetric(
+                //           vertical: 8,
+                //           horizontal: 12,
+                //         ),
+                //         shape: RoundedRectangleBorder(
+                //           borderRadius: BorderRadius.circular(10),
+                //         ),
+                //       ),
+                //     ),
+                //   ),
                 const SizedBox(height: 20),
 
                 // Footer
