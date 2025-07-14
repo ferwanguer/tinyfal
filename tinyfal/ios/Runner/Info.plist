@@ -45,5 +45,20 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	
+	<!-- 1. Google Sign‑In reads this -->
+	<key>GIDClientID</key>
+	<string>969524394775-dtp2o7e8efelgq1j8bst7pr79abavcdd.apps.googleusercontent.com</string>
+	
+	<!-- 2. iOS URL‑scheme for the auth callback -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.969524394775-dtp2o7e8efelgq1j8bst7pr79abavcdd</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>
