@@ -110,45 +110,16 @@ class _PrincipalState extends State<Principal> {
             ),
             floatingActionButton: FloatingActionButton(
               onPressed: () {
-                if (false) {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text('Atención'),
-                        content: Text(
-                          'Dinos como te llamas antes de empezar a escribir!',
-                        ),
-                        actions: <Widget>[
-                          TextButton(
-                            child: Text('Ir a ajustes'),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      Settings(clientUser: widget.clientUser),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                } else {
-                  //TODO Detail view of the resource
-                  //   Navigator.push(
-                  //     context,
-                  //     MaterialPageRoute(
-                  //       builder: (context) => Write(
-                  //         clientUser: widget.clientUser,
-                  //         preferences: preferences,
-                  //       ),
-                  //     ),
-                  //   );
-                }
+                //TODO Detail view of the resource
+                //   Navigator.push(
+                //     context,
+                //     MaterialPageRoute(
+                //       builder: (context) => Write(
+                //         clientUser: widget.clientUser,
+                //         preferences: preferences,
+                //       ),
+                //     ),
+                //   );
               },
               backgroundColor: const Color.fromARGB(255, 119, 200, 238),
               child: FaIcon(

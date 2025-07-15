@@ -86,6 +86,17 @@ Future<void> updateResource(
   });
 }
 
+// Function to update only the token field without affecting timestamp
+Future<void> updateResourceToken(
+  String userId,
+  String resourceId,
+  String token,
+) async {
+  await users.doc(userId).collection('resources').doc(resourceId).update({
+    'token': token,
+  });
+}
+
 // Function to get an 'Escrito' object from the database using an 'escritoId'
 Future<Resource?> getResource(String userId, String escritoId) async {
   DocumentSnapshot doc = await users

@@ -4,41 +4,21 @@ import 'package:tinyfal/src/models/client_user.dart';
 import 'package:tinyfal/src/services/database.dart';
 
 class Status {
-  final Map<String, dynamic> _data;
+  final List<Map<String, dynamic>> _data;
 
   Status(this._data);
 
-  /// Create Status from JSON map
-  factory Status.fromJson(Map<String, dynamic> json) {
-    return Status(Map<String, dynamic>.from(json));
+  /// Create Status from a list of JSON maps
+  factory Status.fromJsonList(List<dynamic> jsonList) {
+    final dataList = jsonList
+        .where((item) => item is Map)
+        .map((item) => Map<String, dynamic>.from(item as Map))
+        .toList();
+    return Status(dataList);
   }
 
-  /// Create Status from raw JSON without knowing the structure
-  factory Status.fromDynamicJson(dynamic json) {
-    if (json is Map<String, dynamic>) {
-      return Status.fromJson(json);
-    } else if (json is Map) {
-      // Handle other map types
-      return Status(Map<String, dynamic>.from(json));
-    } else {
-      throw ArgumentError('JSON must be a Map structure');
-    }
-  }
-
-  /// Get any property by key
-  dynamic operator [](String key) => _data[key];
-
-  /// Set any property by key
-  void operator []=(String key, dynamic value) => _data[key] = value;
-
-  /// Check if a key exists
-  bool containsKey(String key) => _data.containsKey(key);
-
-  /// Get all keys
-  Iterable<String> get keys => _data.keys;
-
-  /// Get all values
-  Iterable<dynamic> get values => _data.values;
+  /// Get the length of the list
+  int get length => _data.length;
 
   /// Check if empty
   bool get isEmpty => _data.isEmpty;
@@ -46,52 +26,54 @@ class Status {
   /// Check if not empty
   bool get isNotEmpty => _data.isNotEmpty;
 
-  /// Get raw data
-  Map<String, dynamic> get data => Map<String, dynamic>.from(_data);
+  /// Get raw data as list
+  List<Map<String, dynamic>> get data => List<Map<String, dynamic>>.from(_data);
 
-  /// Convert to JSON
-  Map<String, dynamic> toJson() => Map<String, dynamic>.from(_data);
-
-  /// Get a typed value with default fallback
-  T? get<T>(String key, [T? defaultValue]) {
-    final value = _data[key];
-    if (value is T) return value;
-    return defaultValue;
+  /// Get all maps with a given 'name' attribute
+  List<Map<String, dynamic>> getByName(String name) {
+    return _data.where((item) => item['name'] == name).toList();
   }
 
-  /// Get a nested Status object
-  Status? getStatus(String key) {
-    final value = _data[key];
-    if (value is Map<String, dynamic>) {
-      return Status(value);
-    }
-    return null;
+  /// RAM MEMORY
+  Map<String, dynamic>? get mem {
+    final memList = getByName('mem');
+    return memList.isNotEmpty ? memList.first : null;
   }
 
-  /// Get a list of Status objects
-  List<Status>? getStatusList(String key) {
-    final value = _data[key];
-    if (value is List) {
-      return value
-          .where((item) => item is Map<String, dynamic>)
-          .map((item) => Status(item as Map<String, dynamic>))
-          .toList();
-    }
-    return null;
+  /// Get used memory percentage (rounded up, no decimal places)
+  int? get usedMemoryPercent {
+    final memData = mem;
+    if (memData == null) return null;
+
+    final fields = memData['fields'] as Map<String, dynamic>?;
+    if (fields == null) return null;
+
+    final availablePercent = fields['available_percent'];
+    if (availablePercent == null) return null;
+
+    final available = (availablePercent is num)
+        ? availablePercent.toDouble()
+        : null;
+    if (available == null) return null;
+
+    final used = 100.0 - available;
+    return used.ceil();
   }
 
-  @override
-  String toString() => _data.toString();
+  int? get availableMemoryPercent {
+    final memData = mem;
+    if (memData == null) return null;
 
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    if (other is! Status) return false;
-    return _data.toString() == other._data.toString();
+    final fields = memData['fields'] as Map<String, dynamic>?;
+    if (fields == null) return null;
+
+    final availablePercent = fields['available_percent'];
+    if (availablePercent == null) return null;
+
+    return (availablePercent is num)
+        ? availablePercent.toDouble().ceil()
+        : null;
   }
-
-  @override
-  int get hashCode => _data.hashCode;
 }
 
 class Resource {
@@ -101,7 +83,13 @@ class Resource {
   Status? status;
   String? token;
 
-  Resource({this.title, required this.uid, this.status, this.token});
+  Resource({
+    this.title,
+    required this.uid,
+    this.status,
+    this.clientUser,
+    this.token,
+  });
 
   Future<void> uploadToFirestore() async {
     await updateResource(clientUser!.uid, uid!, this);
@@ -118,12 +106,11 @@ class Resource {
 
   /// Generate a random token (8 characters)
   String _generateRandomToken() {
-    const chars =
-        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const chars = '0123456789';
     final random = Random();
     return String.fromCharCodes(
       Iterable.generate(
-        8,
+        15, // Generate 15 characters
         (_) => chars.codeUnitAt(random.nextInt(chars.length)),
       ),
     );
@@ -132,28 +119,22 @@ class Resource {
   /// Create a new random token
   Future<void> createToken() async {
     token = _generateRandomToken();
-    await uploadToFirestore();
+    await updateResourceToken(clientUser!.uid, uid!, token!);
   }
 
   /// Regenerate token (delete old and create new)
   Future<void> regenerateToken() async {
     token = _generateRandomToken();
-    await uploadToFirestore();
+    await updateResourceToken(clientUser!.uid, uid!, token!);
   }
-
-  // Convenience getters for accessing status properties
-  String? get text => status?['text'];
-  String? get visibility => status?['visibility'];
-  String? get category => status?['category'];
-  List<dynamic> get comments => status?['comments'] ?? [];
 
   factory Resource.fromFirestore(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return Resource(
       uid: doc.id,
       title: data['title'],
-      status: data['status'] != null
-          ? Status.fromDynamicJson(data['status'])
+      status: data['metrics'] != null
+          ? Status.fromJsonList(data['metrics'])
           : null,
       token: data['token'],
     );

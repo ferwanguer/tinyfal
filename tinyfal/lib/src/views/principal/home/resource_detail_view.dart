@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:tinyfal/src/models/client_user.dart';
 import 'package:tinyfal/src/models/resource.dart';
 import 'package:tinyfal/src/models/preferences.dart';
+import 'package:tinyfal/src/views/principal/home/token.dart';
 
 class ResourceDetailView extends StatefulWidget {
   final Resource resource;
@@ -357,6 +358,17 @@ class _ResourceDetailViewState extends State<ResourceDetailView> {
 
             // System Information
             _buildSystemInfoCard(),
+            SizedBox(height: 16),
+
+            // Token Management
+            TokenManagementCard(
+              resource: widget.resource,
+              clientUser: widget.clientUser,
+              onTokenRegenerated: (newToken) {
+                // Handle token regeneration if needed
+                // You might want to update the UI or notify parent widgets
+              },
+            ),
           ],
         ),
       ),

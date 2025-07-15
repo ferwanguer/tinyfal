@@ -132,7 +132,7 @@ class ResourceTile extends StatelessWidget {
                                 width: 60,
                                 height: 60,
                                 child: CircularProgressIndicator(
-                                  value: _cpuUsage / 100,
+                                  value: resource.status!.length / 100,
                                   strokeWidth: 5,
                                   backgroundColor: Colors.grey[300],
                                   valueColor: AlwaysStoppedAnimation<Color>(
@@ -182,11 +182,16 @@ class ResourceTile extends StatelessWidget {
                                 width: 60,
                                 height: 60,
                                 child: CircularProgressIndicator(
-                                  value: _memoryUsage / 100,
+                                  value:
+                                      resource.status?.usedMemoryPercent != null
+                                      ? resource.status!.usedMemoryPercent! /
+                                            100
+                                      : null,
                                   strokeWidth: 4,
                                   backgroundColor: Colors.grey[300],
                                   valueColor: AlwaysStoppedAnimation<Color>(
-                                    _memoryUsage < 30
+                                    (resource.status?.usedMemoryPercent ?? 0) <
+                                            30
                                         ? Colors.blue[400]!
                                         : _memoryUsage < 70
                                         ? Colors.orange[400]!
@@ -196,7 +201,7 @@ class ResourceTile extends StatelessWidget {
                               ),
                               Center(
                                 child: Text(
-                                  "$_memoryUsage%",
+                                  "${resource.status?.usedMemoryPercent}%",
                                   style: TextStyle(
                                     color: Colors.grey[700],
                                     fontSize: 12,
@@ -209,7 +214,7 @@ class ResourceTile extends StatelessWidget {
                         ),
                         SizedBox(height: 8),
                         Text(
-                          "Mem",
+                          "Used Mem",
                           style: TextStyle(
                             color: Colors.grey[600],
                             fontSize: 14,
