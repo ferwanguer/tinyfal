@@ -82,9 +82,14 @@ class _PrincipalState extends State<Principal> {
                 });
               },
               children: [
-                Home(clientUser: widget.clientUser, preferences: preferences),
+                Home(
+                  key: PageStorageKey<String>('home'),
+                  clientUser: widget.clientUser,
+                  preferences: preferences,
+                ),
 
                 Notifications(
+                  key: PageStorageKey<String>('notifications'),
                   clientUser: widget.clientUser,
                   preferences: preferences,
                 ),

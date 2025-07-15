@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:tinyfal/src/models/client_user.dart';
 import 'package:tinyfal/src/models/resource.dart';
@@ -16,20 +15,6 @@ class ResourceTile extends StatelessWidget {
     required this.preferences,
     required this.clientUser,
   });
-
-  // Mock data generators for demonstration
-  int get _cpuUsage => Random().nextInt(50) + 1; // 1-50%
-  int get _memoryUsage => Random().nextInt(80) + 5; // 5-85%
-  int get _temperature => Random().nextInt(40) + 30; // 30-70°C
-  double get _readSpeed => Random().nextDouble() * 10; // 0-10 M/s
-  double get _writeSpeed => Random().nextDouble() * 8; // 0-8 M/s
-  int get _readOps => Random().nextInt(1000); // 0-1000 ops
-  int get _writeOps => Random().nextInt(500); // 0-500 ops
-
-  String get _lastUpdate {
-    final minutes = Random().nextInt(30) + 1; // 1-30 minutes ago
-    return "${minutes}m ago";
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +54,7 @@ class ResourceTile extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        resource.title ?? "server",
+                        resource.status?.hostname ?? resource.title ?? "server",
                         style: TextStyle(
                           color: Colors.grey[800],
                           fontSize: 18,
@@ -77,16 +62,33 @@ class ResourceTile extends StatelessWidget {
                         ),
                       ),
                       SizedBox(height: 2),
-                      Text(
-                        "Updated $_lastUpdate",
-                        style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                      Row(
+                        children: [
+                          Text(
+                            "Last Update ${resource.status?.lastUpdatedFormatted ?? 'Unknown'}",
+                            style: TextStyle(
+                              color: Colors.grey[500],
+                              fontSize: 12,
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            resource.status?.dataFreshnessStatus ??
+                                "🔴 No data",
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                   Row(
                     children: [
                       Text(
-                        "$_temperature°C",
+                        resource.status?.uptimeCompact ?? "Unknown",
                         style: TextStyle(color: Colors.grey[600], fontSize: 16),
                       ),
                       SizedBox(width: 12),
@@ -94,7 +96,7 @@ class ResourceTile extends StatelessWidget {
                         width: 8,
                         height: 20,
                         decoration: BoxDecoration(
-                          color: Colors.orange[300],
+                          color: Colors.green[300],
                           borderRadius: BorderRadius.circular(2),
                         ),
                         child: Column(
@@ -103,13 +105,11 @@ class ResourceTile extends StatelessWidget {
                             (index) => Container(
                               height: 3,
                               margin: EdgeInsets.symmetric(vertical: 0.5),
-                              color: Colors.orange[200 + (index * 50)],
+                              color: Colors.green[200 + (index * 50)],
                             ),
                           ),
                         ),
                       ),
-                      SizedBox(width: 8),
-                      Icon(Icons.computer, color: Colors.orange[400], size: 20),
                     ],
                   ),
                 ],
@@ -132,21 +132,32 @@ class ResourceTile extends StatelessWidget {
                                 width: 60,
                                 height: 60,
                                 child: CircularProgressIndicator(
-                                  value: resource.status!.length / 100,
+                                  value:
+                                      resource.status?.cpuUsagePercent != null
+                                      ? resource.status!.cpuUsagePercent! / 100
+                                      : null,
                                   strokeWidth: 5,
                                   backgroundColor: Colors.grey[300],
                                   valueColor: AlwaysStoppedAnimation<Color>(
-                                    _cpuUsage < 30
-                                        ? Colors.blue[400]!
-                                        : _cpuUsage < 70
-                                        ? Colors.orange[400]!
-                                        : Colors.red[400]!,
+                                    resource.status?.cpuUsagePercent == null
+                                        ? Colors.grey[400]!
+                                        : (resource.status!.cpuUsagePercent! <
+                                                  30
+                                              ? Colors.blue[400]!
+                                              : (resource
+                                                            .status!
+                                                            .cpuUsagePercent! <
+                                                        70
+                                                    ? Colors.orange[400]!
+                                                    : Colors.red[400]!)),
                                   ),
                                 ),
                               ),
                               Center(
                                 child: Text(
-                                  "$_cpuUsage%",
+                                  resource.status?.cpuUsagePercent != null
+                                      ? "${resource.status!.cpuUsagePercent}%"
+                                      : "...",
                                   style: TextStyle(
                                     color: Colors.grey[700],
                                     fontSize: 12,
@@ -233,13 +244,13 @@ class ResourceTile extends StatelessWidget {
                     ),
                   ),
 
-                  // I/O Stats
+                  // Network Stats
                   Expanded(
                     flex: 2,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Read stats
+                        // Received stats
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -247,7 +258,7 @@ class ResourceTile extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "${_readOps}",
+                                  "${(resource.status?.networkPacketsReceived ?? 0) ~/ 1000}K",
                                   style: TextStyle(
                                     color: Colors.blue[600],
                                     fontSize: 16,
@@ -255,7 +266,7 @@ class ResourceTile extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  "↑/s",
+                                  "↓ recv",
                                   style: TextStyle(
                                     color: Colors.grey[600],
                                     fontSize: 12,
@@ -267,14 +278,14 @@ class ResourceTile extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 Text(
-                                  "${_readSpeed.toStringAsFixed(1)}M",
+                                  resource.status?.networkReceiveMBps ?? "0M",
                                   style: TextStyle(
                                     color: Colors.grey[600],
                                     fontSize: 14,
                                   ),
                                 ),
                                 Text(
-                                  "read/s",
+                                  "total",
                                   style: TextStyle(
                                     color: Colors.grey[600],
                                     fontSize: 12,
@@ -285,7 +296,7 @@ class ResourceTile extends StatelessWidget {
                           ],
                         ),
                         SizedBox(height: 8),
-                        // Write stats
+                        // Sent stats
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -293,7 +304,7 @@ class ResourceTile extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "${_writeOps}",
+                                  "${(resource.status?.networkPacketsSent ?? 0) ~/ 1000}K",
                                   style: TextStyle(
                                     color: Colors.blue[600],
                                     fontSize: 16,
@@ -301,7 +312,7 @@ class ResourceTile extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  "↓/s",
+                                  "↑ sent",
                                   style: TextStyle(
                                     color: Colors.grey[600],
                                     fontSize: 12,
@@ -313,7 +324,7 @@ class ResourceTile extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 Text(
-                                  "${_writeSpeed.toStringAsFixed(1)}K",
+                                  resource.status?.networkSentMBps ?? "0M",
                                   style: TextStyle(
                                     color: Colors.blue[600],
                                     fontSize: 14,
@@ -321,7 +332,7 @@ class ResourceTile extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  "write/s",
+                                  "total",
                                   style: TextStyle(
                                     color: Colors.grey[600],
                                     fontSize: 12,
