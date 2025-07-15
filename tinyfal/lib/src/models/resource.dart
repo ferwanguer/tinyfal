@@ -48,16 +48,10 @@ class Status {
     final fields = memData['fields'] as Map<String, dynamic>?;
     if (fields == null) return null;
 
-    final availablePercent = fields['available_percent'];
-    if (availablePercent == null) return null;
+    final usedPercent = fields['used_percent'];
+    if (usedPercent == null) return null;
 
-    final available = (availablePercent is num)
-        ? availablePercent.toDouble()
-        : null;
-    if (available == null) return null;
-
-    final used = 100.0 - available;
-    return used.ceil();
+    return (usedPercent is num) ? usedPercent.toDouble().ceil() : null;
   }
 
   int? get availableMemoryPercent {
@@ -73,6 +67,56 @@ class Status {
     return (availablePercent is num)
         ? availablePercent.toDouble().ceil()
         : null;
+  }
+
+  /// Get buffered memory in MB (rounded up)
+  int? get bufferedMemoryMB {
+    final memData = mem;
+    if (memData == null) return null;
+
+    final fields = memData['fields'] as Map<String, dynamic>?;
+    if (fields == null) return null;
+
+    final buffered = fields['buffered'];
+    if (buffered == null) return null;
+
+    return (buffered is num)
+        ? (buffered.toDouble() / 1024 / 1024).ceil()
+        : null;
+  }
+
+  /// Get cached memory in MB (rounded up)
+  int? get cachedMemoryMB {
+    final memData = mem;
+    if (memData == null) return null;
+
+    final fields = memData['fields'] as Map<String, dynamic>?;
+    if (fields == null) return null;
+
+    final cached = fields['cached'];
+    if (cached == null) return null;
+
+    return (cached is num) ? (cached.toDouble() / 1024 / 1024).ceil() : null;
+  }
+
+  /// SWAP MEMORY
+  Map<String, dynamic>? get swap {
+    final swapList = getByName('swap');
+    return swapList.isNotEmpty ? swapList.first : null;
+  }
+
+  /// Get used swap percentage (rounded up, no decimal places)
+  int? get usedSwapPercent {
+    final swapData = swap;
+    if (swapData == null) return null;
+
+    final fields = swapData['fields'] as Map<String, dynamic>?;
+    if (fields == null) return null;
+
+    final usedPercent = fields['used_percent'];
+    if (usedPercent == null) return null;
+
+    return (usedPercent is num) ? usedPercent.toDouble().ceil() : null;
   }
 }
 

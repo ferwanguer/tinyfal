@@ -191,10 +191,19 @@ class ResourceTile extends StatelessWidget {
                                   backgroundColor: Colors.grey[300],
                                   valueColor: AlwaysStoppedAnimation<Color>(
                                     (resource.status?.usedMemoryPercent ?? 0) <
-                                            30
+                                            50
                                         ? Colors.blue[400]!
-                                        : _memoryUsage < 70
-                                        ? Colors.orange[400]!
+                                        : (resource.status?.usedMemoryPercent !=
+                                                  null &&
+                                              (resource
+                                                          .status!
+                                                          .usedMemoryPercent !=
+                                                      null &&
+                                                  resource
+                                                          .status!
+                                                          .usedMemoryPercent! <
+                                                      70))
+                                        ? Colors.orange
                                         : Colors.red[400]!,
                                   ),
                                 ),
