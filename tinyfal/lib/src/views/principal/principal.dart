@@ -170,7 +170,7 @@ class _PrincipalState extends State<Principal> {
               },
               backgroundColor: const Color.fromARGB(255, 119, 200, 238),
               child: FaIcon(
-                FontAwesomeIcons.penNib,
+                FontAwesomeIcons.plus,
                 color: Theme.of(context).colorScheme.onPrimary,
               ),
             ),

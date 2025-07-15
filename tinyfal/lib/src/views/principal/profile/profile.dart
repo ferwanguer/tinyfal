@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tinyfal/src/models/preferences.dart';
 import 'package:tinyfal/src/services/database.dart';
-import 'package:tinyfal/src/models/escrito.dart';
+import 'package:tinyfal/src/models/resource.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:tinyfal/src/models/client_user.dart';

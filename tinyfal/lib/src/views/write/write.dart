@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tinyfal/src/models/client_user.dart';
-import 'package:tinyfal/src/models/escrito.dart';
+import 'package:tinyfal/src/models/resource.dart';
 import 'package:tinyfal/src/models/preferences.dart';
 import 'package:tinyfal/src/services/utils.dart';
 import 'package:tinyfal/src/views/principal/principal.dart';

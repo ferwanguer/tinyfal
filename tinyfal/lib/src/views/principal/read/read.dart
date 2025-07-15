@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tinyfal/src/models/escrito.dart';
+import 'package:tinyfal/src/models/resource.dart';
 import 'package:tinyfal/src/models/preferences.dart';
 import 'package:provider/provider.dart';
 import 'package:tinyfal/src/services/database.dart'; // Import the database service

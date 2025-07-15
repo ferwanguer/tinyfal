@@ -5,7 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 
 import 'package:tinyfal/src/models/notification.dart';
 import 'package:tinyfal/src/models/preferences.dart';
-import 'package:tinyfal/src/models/escrito.dart';
+import 'package:tinyfal/src/models/resource.dart';
 
 // Collections ============================================================================================
 late CollectionReference users = FirebaseFirestore.instance.collection('users');

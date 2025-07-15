@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:tinyfal/src/models/escrito.dart';
+import 'package:tinyfal/src/models/resource.dart';
 import 'package:tinyfal/src/services/database.dart';
 
 class Notificacion {
