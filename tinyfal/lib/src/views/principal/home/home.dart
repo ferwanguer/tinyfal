@@ -3,7 +3,7 @@ import 'package:tinyfal/src/models/client_user.dart';
 import 'package:tinyfal/src/models/preferences.dart';
 import 'package:tinyfal/src/services/database.dart';
 import 'package:tinyfal/src/models/resource.dart';
-import 'package:tinyfal/src/views/principal/home/public_tile_element.dart';
+import 'package:tinyfal/src/views/principal/home/resource_tile.dart';
 import 'package:tinyfal/src/views/principal/read/read.dart';
 
 class Home extends StatelessWidget {
@@ -14,8 +14,8 @@ class Home extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: StreamBuilder<List<Escrito?>>(
-        stream: publicEscritos,
+      body: StreamBuilder<List<Resource?>>(
+        stream: getResourcesStream(clientUser!.uid),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
@@ -24,21 +24,14 @@ class Home extends StatelessWidget {
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return Center(child: Text('Create a resource to see it here.'));
           } else {
-            final publicescritos = snapshot.data!;
-            final List<Escrito?> filteredEscritos;
-            if (!preferences!.isEscuelaEscritores) {
-              filteredEscritos = publicescritos
-                  .where((escrito) => escrito!.visibility == 'publico')
-                  .toList();
-            } else {
-              filteredEscritos = publicescritos;
-            }
+            final resources = snapshot.data!;
+
             return ListView.builder(
-              itemCount: filteredEscritos.length,
+              itemCount: resources.length,
               itemBuilder: (context, index) {
-                final escrito = publicescritos[index];
+                final resource = resources[index];
                 return PublicTileElement(
-                  escrito: escrito!,
+                  resource: resource!,
                   preferences: preferences!,
                   clientUser: clientUser,
                 );

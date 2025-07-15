@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:tinyfal/src/models/client_user.dart';
 import 'package:tinyfal/src/services/database.dart';
@@ -98,24 +99,51 @@ class Resource {
   String? title;
   ClientUser? clientUser;
   Status? status;
+  String? token;
 
   Resource({
     this.title,
     required this.uid,
     required this.clientUser,
     this.status,
+    this.token,
   });
 
   Future<void> uploadToFirestore() async {
-    await updateEscrito(clientUser!.uid, uid!, this);
+    await updateResource(clientUser!.uid, uid!, this);
   }
 
   Future<void> deleteFromFirestore() async {
-    await deleteEscrito(clientUser!.uid, uid!);
+    await deleteResource(clientUser!.uid, uid!);
   }
 
   Future<void> updateStatus(Status newStatus) async {
     status = newStatus;
+    await uploadToFirestore();
+  }
+
+  /// Generate a random token (8 characters)
+  String _generateRandomToken() {
+    const chars =
+        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    final random = Random();
+    return String.fromCharCodes(
+      Iterable.generate(
+        8,
+        (_) => chars.codeUnitAt(random.nextInt(chars.length)),
+      ),
+    );
+  }
+
+  /// Create a new random token
+  Future<void> createToken() async {
+    token = _generateRandomToken();
+    await uploadToFirestore();
+  }
+
+  /// Regenerate token (delete old and create new)
+  Future<void> regenerateToken() async {
+    token = _generateRandomToken();
     await uploadToFirestore();
   }
 
@@ -128,6 +156,7 @@ class Resource {
       status: data['status'] != null
           ? Status.fromDynamicJson(data['status'])
           : null,
+      token: data['token'],
     );
   }
 }

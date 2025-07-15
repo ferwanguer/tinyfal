@@ -67,59 +67,52 @@ Future<void> createUserPreference(String userId, String email) async {
       }
     }
 
-    await users.doc(userId).set({
-      "fcmToken": token ?? "notnow",
-      "email": email,
-    });
+    await users.doc(userId).set({"fcmToken": token ?? "", "email": email});
   }
 }
 
 // Function to update a document under 'escritos' collection for a user
-Future<void> updateEscrito(
+Future<void> updateResource(
   String userId,
-  String escritoId,
-  Escrito escrito,
+  String resourceId,
+  Resource resource,
 ) async {
-  await users.doc(userId).collection('escritos').doc(escritoId).set({
-    'title': escrito.title,
-    'title_lower': escrito.title?.toLowerCase(),
-    'text': escrito.text,
-
-    'visibility': escrito.visibility,
-    'category': escrito.category,
+  await users.doc(userId).collection('resources').doc(resourceId).set({
+    'title': resource.title,
     'authorId': userId,
     'timestamp': FieldValue.serverTimestamp(),
+    'token': resource.token,
     // Set timestamp in seconds
   });
 }
 
 // Function to get an 'Escrito' object from the database using an 'escritoId'
-Future<Escrito?> getEscrito(String userId, String escritoId) async {
+Future<Resource?> getResource(String userId, String escritoId) async {
   DocumentSnapshot doc = await users
       .doc(userId)
-      .collection('escritos')
+      .collection('resources')
       .doc(escritoId)
       .get();
   if (doc.exists) {
-    return Escrito.fromFirestore(doc);
+    return Resource.fromFirestore(doc);
   }
   return null;
 }
 
 // Function to delete an 'Escrito' object from the database using an 'escritoId'
-Future<void> deleteEscrito(String userId, String escritoId) async {
-  await users.doc(userId).collection('escritos').doc(escritoId).delete();
+Future<void> deleteResource(String userId, String escritoId) async {
+  await users.doc(userId).collection('resources').doc(escritoId).delete();
 }
 
 // Stream to get a list of 'Escrito' objects for a given user, sorted by timestamp
-Stream<List<Escrito>> getEscritosStream(String userId) {
+Stream<List<Resource>> getResourcesStream(String userId) {
   return users
       .doc(userId)
-      .collection('escritos')
-      .orderBy('timestamp', descending: true) // Sort by timestamp
+      .collection('resources')
+      .orderBy('title', descending: true) // Sort by name
       .snapshots()
       .map((snapshot) {
-        return snapshot.docs.map((doc) => Escrito.fromFirestore(doc)).toList();
+        return snapshot.docs.map((doc) => Resource.fromFirestore(doc)).toList();
       });
 }
 
@@ -134,30 +127,5 @@ Stream<List<Notificacion>> getNotificacionsStream(String userId) {
         return snapshot.docs
             .map((doc) => Notificacion.fromFirestore(doc))
             .toList();
-      });
-}
-
-Stream<List<Escrito?>> get publicEscritos {
-  return FirebaseFirestore.instance
-      .collectionGroup("escritos")
-      .where('visibility', isNotEqualTo: "privado")
-      .orderBy('timestamp', descending: true)
-      .snapshots()
-      .map((snapshot) {
-        return snapshot.docs.map((doc) => Escrito.fromFirestore(doc)).toList();
-      });
-}
-
-// Function to search for 'Escrito' objects based on a search text
-Stream<List<Escrito>> searchEscritos(String searchText) {
-  return FirebaseFirestore.instance
-      .collectionGroup('escritos')
-      .where('visibility', isNotEqualTo: 'privado')
-      .orderBy('title_lower')
-      .startAt([searchText])
-      .endAt(['$searchText\uf8ff'])
-      .snapshots()
-      .map((snapshot) {
-        return snapshot.docs.map((doc) => Escrito.fromFirestore(doc)).toList();
       });
 }
