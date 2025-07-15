@@ -2,7 +2,7 @@
 # To get started, simply uncomment the below code or create your own.
 # Deploy with `firebase deploy`
 
-from firebase_functions import https_fn
+from firebase_functions import https_fn, logger
 from firebase_functions.options import set_global_options
 from firebase_admin import initialize_app, firestore
 import json
@@ -78,12 +78,16 @@ def ingest(req: https_fn.Request) -> https_fn.Response:
         user_id = resource_doc.reference.parent.parent.id
             
     except Exception as e:
+        logger.error(f"Token verification failed for token: {token[:10]}... Error: {str(e)}")
+        
         return https_fn.Response(
             json.dumps({"error": f"Token verification failed: {str(e)}"}),
             status=401,
             headers={"Content-Type": "application/json"}
         )
-    
+    # Log successful token verification
+    logger.info(f"Token verified successfully for user_id: {user_id}, resource_id: {resource_id}")
+
     # Parse JSON body
     try:
         request_data = req.get_json()
@@ -104,30 +108,19 @@ def ingest(req: https_fn.Request) -> https_fn.Response:
     # Create document path
     doc_path = f"users/{user_id}/resources/{resource_id}"
     
-    # Prepare data to log with timestamp
-    log_entry = {
-        "data": request_data,
-        "timestamp": firestore.SERVER_TIMESTAMP,
-        "user_id": user_id,
-        "resource_id": resource_id
-    }
+   
+
     
     # Log data to Firestore
     try:
         # Get reference to the document
         doc_ref = db.document(doc_path)
         
-        # Add the log entry to a subcollection for historical records
-        logs_collection = doc_ref.collection('logs')
-        logs_collection.add(log_entry)
+        # Set the entry data with merge capabilities
+        doc_ref.set(request_data, merge=True)
         
-        # Update the main document with latest data
-        # doc_ref.set({
-        #     "latest_data": request_data,
-        #     "last_updated": firestore.SERVER_TIMESTAMP,
-        #     "user_id": user_id,
-        #     "resource_id": resource_id
-        # }, merge=True)
+        # Log successful data logging
+        logger.info(f"Data logged successfully for user_id: {user_id}, resource_id: {resource_id}")
         
         return https_fn.Response(
             json.dumps({
@@ -142,12 +135,12 @@ def ingest(req: https_fn.Request) -> https_fn.Response:
         )
         
     except Exception as e:
+        logger.error(f"Failed to log data for user_id: {user_id}, resource_id: {resource_id}. Error: {str(e)}")
         return https_fn.Response(
             json.dumps({"error": f"Failed to log data: {str(e)}"}),
             status=500,
             headers={"Content-Type": "application/json"}
-        )
-
+        ) 
 
 # @https_fn.on_request()
 # def on_request_example(req: https_fn.Request) -> https_fn.Response:
