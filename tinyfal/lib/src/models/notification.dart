@@ -25,10 +25,6 @@ class Notificacion {
     );
   }
 
-  Future<Escrito?> fetchEscrito(String userId, String escritoId) async {
-    return await getEscrito(userId, escritoId);
-  }
-
   Map<String, dynamic> toMap() {
     return {'title': title, 'body': title, 'timestamp': timestamp};
   }

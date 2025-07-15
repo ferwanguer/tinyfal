@@ -4,7 +4,6 @@ import 'package:tinyfal/src/models/preferences.dart';
 import 'package:tinyfal/src/services/database.dart';
 import 'package:tinyfal/src/models/resource.dart';
 import 'package:tinyfal/src/views/principal/home/resource_tile.dart';
-import 'package:tinyfal/src/views/principal/read/read.dart';
 
 class Home extends StatelessWidget {
   final ClientUser? clientUser;
@@ -30,7 +29,7 @@ class Home extends StatelessWidget {
               itemCount: resources.length,
               itemBuilder: (context, index) {
                 final resource = resources[index];
-                return PublicTileElement(
+                return ResourceTile(
                   resource: resource!,
                   preferences: preferences!,
                   clientUser: clientUser,

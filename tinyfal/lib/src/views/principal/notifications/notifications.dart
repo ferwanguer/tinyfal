@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tinyfal/src/models/client_user.dart';
 import 'package:tinyfal/src/models/preferences.dart';
-import 'package:tinyfal/src/views/write/write.dart';
+
 import 'package:provider/provider.dart';
 import 'package:tinyfal/src/models/notification.dart';
 import 'package:tinyfal/src/services/database.dart';
@@ -41,19 +41,20 @@ class Notifications extends StatelessWidget {
                   subtitle: Text(notification.body),
                   trailing: Icon(Icons.arrow_forward_ios),
                   onTap: () {
-                    notifications[index]
-                        .fetchEscrito(clientUser!.uid, notification.escritoId!)
-                        .then((escrito) {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => Write(
-                                clientUser: clientUser,
-                                escrito: escrito, //TODO FIX THIS
-                                preferences: preferences,
-                              ),
-                            ),
-                          );
-                        });
+                    //TODO fix this
+                    // notifications[index]
+                    //     .fetchEscrito(clientUser!.uid, notification.escritoId!)
+                    //     .then((escrito) {
+                    //       Navigator.of(context).push(
+                    //         MaterialPageRoute(
+                    //           builder: (context) => Write(
+                    //             clientUser: clientUser,
+                    //             escrito: escrito, //TODO FIX THIS
+                    //             preferences: preferences,
+                    //           ),
+                    //         ),
+                    //       );
+                    //     });
                   },
                 ),
               );

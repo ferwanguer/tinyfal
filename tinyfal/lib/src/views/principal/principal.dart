@@ -3,9 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tinyfal/src/models/client_user.dart';
 import 'package:tinyfal/src/views/principal/home/home.dart';
 import 'package:tinyfal/src/views/principal/notifications/notifications.dart';
-import 'package:tinyfal/src/views/principal/profile/profile.dart';
-import 'package:tinyfal/src/views/principal/thesearch/thesearch.dart';
-import 'package:tinyfal/src/views/write/write.dart';
+
 import 'package:tinyfal/src/services/database.dart'; // Import the database service
 import 'package:tinyfal/src/models/preferences.dart'; // Import the Preferences model
 import 'package:provider/provider.dart'; // Import Provider package
@@ -60,7 +58,7 @@ class _PrincipalState extends State<Principal> {
           }
           return Scaffold(
             appBar: AppBar(
-              title: Text("Literatos"),
+              title: Text("Tinyfal"),
               actions: [
                 IconButton(
                   icon: const Icon(Icons.settings),
@@ -85,15 +83,8 @@ class _PrincipalState extends State<Principal> {
               },
               children: [
                 Home(clientUser: widget.clientUser, preferences: preferences),
-                TheSearch(
-                  clientUser: widget.clientUser,
-                  preferences: preferences,
-                ),
+
                 Notifications(
-                  clientUser: widget.clientUser,
-                  preferences: preferences,
-                ),
-                Profile(
                   clientUser: widget.clientUser,
                   preferences: preferences,
                 ),
@@ -102,17 +93,10 @@ class _PrincipalState extends State<Principal> {
             bottomNavigationBar: BottomNavigationBar(
               items: const <BottomNavigationBarItem>[
                 BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.search),
-                  label: 'Search',
-                ),
+
                 BottomNavigationBarItem(
                   icon: Icon(Icons.notifications),
                   label: 'Notifications',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.person),
-                  label: 'Profile',
                 ),
               ],
               currentIndex: _selectedIndex,
@@ -126,10 +110,7 @@ class _PrincipalState extends State<Principal> {
             ),
             floatingActionButton: FloatingActionButton(
               onPressed: () {
-                if (preferences.username == null ||
-                    preferences.username!.isEmpty ||
-                    preferences.description == null ||
-                    preferences.description!.isEmpty) {
+                if (false) {
                   showDialog(
                     context: context,
                     builder: (BuildContext context) {
@@ -157,15 +138,16 @@ class _PrincipalState extends State<Principal> {
                     },
                   );
                 } else {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Write(
-                        clientUser: widget.clientUser,
-                        preferences: preferences,
-                      ),
-                    ),
-                  );
+                  //TODO Detail view of the resource
+                  //   Navigator.push(
+                  //     context,
+                  //     MaterialPageRoute(
+                  //       builder: (context) => Write(
+                  //         clientUser: widget.clientUser,
+                  //         preferences: preferences,
+                  //       ),
+                  //     ),
+                  //   );
                 }
               },
               backgroundColor: const Color.fromARGB(255, 119, 200, 238),

@@ -101,13 +101,7 @@ class Resource {
   Status? status;
   String? token;
 
-  Resource({
-    this.title,
-    required this.uid,
-    required this.clientUser,
-    this.status,
-    this.token,
-  });
+  Resource({this.title, required this.uid, this.status, this.token});
 
   Future<void> uploadToFirestore() async {
     await updateResource(clientUser!.uid, uid!, this);
@@ -147,12 +141,17 @@ class Resource {
     await uploadToFirestore();
   }
 
+  // Convenience getters for accessing status properties
+  String? get text => status?['text'];
+  String? get visibility => status?['visibility'];
+  String? get category => status?['category'];
+  List<dynamic> get comments => status?['comments'] ?? [];
+
   factory Resource.fromFirestore(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return Resource(
       uid: doc.id,
       title: data['title'],
-      clientUser: ClientUser(uid: data['authorId']),
       status: data['status'] != null
           ? Status.fromDynamicJson(data['status'])
           : null,
