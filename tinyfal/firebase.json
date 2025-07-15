@@ -1,1 +1,72 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"tinyfal","appId":"1:969524394775:android:4c2d896aac522059b19552","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"tinyfal","configurations":{"android":"1:969524394775:android:4c2d896aac522059b19552","ios":"1:969524394775:ios:86a850d7f059bcc0b19552","web":"1:969524394775:web:8dfd25de6f2b3e88b19552"}}},"ios":{"default":{"projectId":"tinyfal","appId":"1:969524394775:ios:86a850d7f059bcc0b19552","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}}}},"firestore":{"database":"(default)","location":"eur3","rules":"firestore.rules","indexes":"firestore.indexes.json"},"functions":[{"source":"functions","codebase":"default","ignore":["venv",".git","firebase-debug.log","firebase-debug.*.log","*.local"],"runtime":"python313"}],"hosting":{"public":"web","ignore":["firebase.json","**/.*","**/node_modules/**"],"rewrites":[{"source":"**","destination":"/index.html"}]},"storage":{"rules":"storage.rules"},"emulators":{"singleProjectMode":true},"extensions":{}}
+{
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "tinyfal",
+                    "appId": "1:969524394775:android:4c2d896aac522059b19552",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": "tinyfal",
+                    "configurations": {
+                        "android": "1:969524394775:android:4c2d896aac522059b19552",
+                        "ios": "1:969524394775:ios:86a850d7f059bcc0b19552",
+                        "web": "1:969524394775:web:8dfd25de6f2b3e88b19552"
+                    }
+                }
+            },
+            "ios": {
+                "default": {
+                    "projectId": "tinyfal",
+                    "appId": "1:969524394775:ios:86a850d7f059bcc0b19552",
+                    "uploadDebugSymbols": false,
+                    "fileOutput": "ios/Runner/GoogleService-Info.plist"
+                }
+            }
+        }
+    },
+    "firestore": {
+        "database": "(default)",
+        "location": "eur3",
+        "rules": "firestore.rules",
+        "indexes": "firestore.indexes.json"
+    },
+    "functions": [
+        {
+            "source": "functions",
+            "codebase": "default",
+            "ignore": [
+                "venv",
+                ".git",
+                "firebase-debug.log",
+                "firebase-debug.*.log",
+                "*.local"
+            ],
+            "runtime": "python312"
+        }
+    ],
+    "hosting": {
+        "public": "web",
+        "ignore": [
+            "firebase.json",
+            "**/.*",
+            "**/node_modules/**"
+        ],
+        "rewrites": [
+            {
+                "source": "**",
+                "destination": "/index.html"
+            }
+        ]
+    },
+    "storage": {
+        "rules": "storage.rules"
+    },
+    "emulators": {
+        "singleProjectMode": true
+    },
+    "extensions": {}
+}
