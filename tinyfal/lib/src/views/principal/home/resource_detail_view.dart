@@ -4,6 +4,7 @@ import 'package:tinyfal/src/models/client_user.dart';
 import 'package:tinyfal/src/models/resource.dart';
 import 'package:tinyfal/src/models/preferences.dart';
 import 'package:tinyfal/src/views/principal/home/token.dart';
+import 'package:tinyfal/src/views/principal/home/delete_resource_dialog.dart';
 
 class ResourceDetailView extends StatefulWidget {
   final Resource resource;
@@ -307,6 +308,18 @@ class _ResourceDetailViewState extends State<ResourceDetailView> {
     return Colors.red[400]!;
   }
 
+  Future<void> _showDeleteDialog(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => DeleteResourceDialog(resource: widget.resource),
+    );
+
+    if (result == true && mounted) {
+      // Resource was deleted, navigate back to the previous screen
+      Navigator.of(context).pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -322,6 +335,13 @@ class _ResourceDetailViewState extends State<ResourceDetailView> {
         backgroundColor: Colors.white,
         elevation: 1,
         iconTheme: IconThemeData(color: Colors.grey[800]),
+        actions: [
+          IconButton(
+            onPressed: () => _showDeleteDialog(context),
+            icon: Icon(Icons.delete, color: Colors.red[600]),
+            tooltip: 'Delete Resource',
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),

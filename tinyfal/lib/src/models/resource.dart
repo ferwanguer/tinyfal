@@ -647,7 +647,7 @@ class Resource {
     await updateResourceToken(clientUser!.uid, uid!, token!);
   }
 
-  factory Resource.fromFirestore(DocumentSnapshot doc) {
+  factory Resource.fromFirestore(DocumentSnapshot doc, String userId) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return Resource(
       uid: doc.id,
@@ -656,6 +656,7 @@ class Resource {
           ? Status.fromJsonList(data['metrics'])
           : null,
       token: data['token'],
+      clientUser: ClientUser(uid: userId),
     );
   }
 }

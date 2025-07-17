@@ -120,14 +120,14 @@ Future<Resource?> getResource(String userId, String escritoId) async {
       .doc(escritoId)
       .get();
   if (doc.exists) {
-    return Resource.fromFirestore(doc);
+    return Resource.fromFirestore(doc, userId);
   }
   return null;
 }
 
 // Function to delete an 'Escrito' object from the database using an 'escritoId'
-Future<void> deleteResource(String userId, String escritoId) async {
-  await users.doc(userId).collection('resources').doc(escritoId).delete();
+Future<void> deleteResource(String userId, String resourceId) async {
+  await users.doc(userId).collection('resources').doc(resourceId).delete();
 }
 
 // Stream to get a list of 'Escrito' objects for a given user, sorted by timestamp
@@ -138,7 +138,9 @@ Stream<List<Resource>> getResourcesStream(String userId) {
       .orderBy('title', descending: true) // Sort by name
       .snapshots()
       .map((snapshot) {
-        return snapshot.docs.map((doc) => Resource.fromFirestore(doc)).toList();
+        return snapshot.docs
+            .map((doc) => Resource.fromFirestore(doc, userId))
+            .toList();
       });
 }
 
