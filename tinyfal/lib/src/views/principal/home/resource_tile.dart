@@ -55,6 +55,9 @@ class ResourceTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Text(
+                //   "Resource: ${resource.status?.availableMemoryPercent ?? 'Unknown'}",
+                // ),
                 // Header row with server name, temperature and icons
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -128,7 +131,48 @@ class ResourceTile extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: 20),
+                // Add load averages row
+                SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          "Load: ",
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 12,
+                          ),
+                        ),
+                        Text(
+                          "${resource.status?.load1?.toStringAsFixed(2) ?? '?'}",
+                          style: TextStyle(
+                            color: (resource.status?.load1 ?? 0) > 2.0
+                                ? Colors.red[600]
+                                : (resource.status?.load1 ?? 0) > 1.0
+                                ? Colors.orange[600]
+                                : Colors.grey[600],
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          " ${resource.status?.load5?.toStringAsFixed(2) ?? '?'} ${resource.status?.load15?.toStringAsFixed(2) ?? '?'}",
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      "1m 5m 15m",
+                      style: TextStyle(color: Colors.grey[500], fontSize: 11),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12),
 
                 // Metrics row
                 Row(
