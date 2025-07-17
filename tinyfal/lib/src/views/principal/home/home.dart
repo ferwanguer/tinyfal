@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:tinyfal/src/models/client_user.dart';
 import 'package:tinyfal/src/models/preferences.dart';
@@ -28,13 +29,12 @@ class _HomeState extends State<Home> {
     _refreshTimer = Timer.periodic(Duration(seconds: 60), (timer) {
       //print("🟢 TIMER: Refreshing resources... ${DateTime.now()}");
       if (mounted) {
-        //print("🟡 TIMER: Calling setState");
+        developer.log("TIMER: Calling setState", name: 'home.dart', level: 0);
         setState(() {
           // This will trigger a rebuild of all resource tiles
           // Freshness indicators will automatically update
         });
       } else {
-        //print("🔴 TIMER: Widget not mounted, canceling");
         timer.cancel();
       }
     });
