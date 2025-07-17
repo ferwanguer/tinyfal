@@ -6,6 +6,7 @@ import 'package:tinyfal/src/views/principal/home/token.dart';
 import 'package:tinyfal/src/views/principal/home/delete_resource_dialog.dart';
 import 'package:tinyfal/src/services/database.dart';
 
+//TODO refactor
 class ResourceDetailView extends StatefulWidget {
   final Resource resource;
   final ClientUser? clientUser;
