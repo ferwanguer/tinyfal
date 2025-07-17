@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:developer' as developer;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:tinyfal/src/models/client_user.dart';
 import 'package:tinyfal/src/services/database.dart';
@@ -40,7 +41,8 @@ class Status {
     return memList.isNotEmpty ? memList.first : null;
   }
 
-  /// Get used memory percentage (rounded up, no decimal places)
+  /// Get used memory percentage (rounded up, no decimal places). Computed so that it
+  /// ressembles the same results as btop.
   int? get usedMemoryPercent {
     final memData = mem;
     if (memData == null) return null;
@@ -48,10 +50,10 @@ class Status {
     final fields = memData['fields'] as Map<String, dynamic>?;
     if (fields == null) return null;
 
-    final usedPercent = fields['used_percent'];
+    final usedPercent = fields['available_percent'];
     if (usedPercent == null) return null;
 
-    return (usedPercent is num) ? usedPercent.toDouble().ceil() : null;
+    return (usedPercent is num) ? 100 - usedPercent.toDouble().floor() : null;
   }
 
   int? get availableMemoryPercent {
@@ -62,6 +64,10 @@ class Status {
     if (fields == null) return null;
 
     final availablePercent = fields['available_percent'];
+    developer.log(
+      'Available memory percent: $availablePercent',
+      name: 'resource.dart:68',
+    );
     if (availablePercent == null) return null;
 
     return (availablePercent is num)
