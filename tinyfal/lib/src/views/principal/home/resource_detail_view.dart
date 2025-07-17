@@ -4,6 +4,7 @@ import 'package:tinyfal/src/models/resource.dart';
 import 'package:tinyfal/src/models/preferences.dart';
 import 'package:tinyfal/src/views/principal/home/token.dart';
 import 'package:tinyfal/src/views/principal/home/delete_resource_dialog.dart';
+import 'package:tinyfal/src/services/database.dart';
 
 class ResourceDetailView extends StatefulWidget {
   final Resource resource;
@@ -732,6 +733,57 @@ class _ResourceDetailViewState extends State<ResourceDetailView> {
             style: TextStyle(fontSize: 10, color: Colors.grey[500]),
           ),
       ],
+    );
+  }
+}
+
+class ResourceDetailPage extends StatelessWidget {
+  final String userId;
+  final String resourceId;
+  final ClientUser? clientUser;
+  final Preferences? preferences;
+
+  const ResourceDetailPage({
+    super.key,
+    required this.userId,
+    required this.resourceId,
+    this.clientUser,
+    this.preferences,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<Resource?>(
+      stream: getResourceStream(userId, resourceId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(
+            appBar: AppBar(title: Text("Loading...")),
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return Scaffold(
+            appBar: AppBar(title: Text("Error")),
+            body: Center(child: Text("Error: ${snapshot.error}")),
+          );
+        }
+
+        if (!snapshot.hasData || snapshot.data == null) {
+          return Scaffold(
+            appBar: AppBar(title: Text("Not Found")),
+            body: Center(child: Text("Resource not found")),
+          );
+        }
+
+        final resource = snapshot.data!;
+        return ResourceDetailView(
+          resource: resource,
+          preferences: preferences,
+          clientUser: clientUser,
+        );
+      },
     );
   }
 }

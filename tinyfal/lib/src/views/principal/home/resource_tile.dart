@@ -26,8 +26,9 @@ class ResourceTile extends StatelessWidget {
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => ResourceDetailView(
-              resource: resource,
+            builder: (context) => ResourceDetailPage(
+              userId: clientUser!.uid,
+              resourceId: resource.uid!,
               clientUser: clientUser,
               preferences: preferences,
             ),

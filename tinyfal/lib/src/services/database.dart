@@ -157,3 +157,14 @@ Stream<List<Notificacion>> getNotificacionsStream(String userId) {
             .toList();
       });
 }
+
+// Stream to get a single Resource by ID for a given user
+Stream<Resource?> getResourceStream(String userId, String resourceId) {
+  return getResourcesStream(userId).map((resources) {
+    try {
+      return resources.firstWhere((r) => r.uid == resourceId);
+    } catch (e) {
+      return null;
+    }
+  });
+}
