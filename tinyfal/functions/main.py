@@ -6,6 +6,7 @@ from firebase_functions import https_fn, logger
 from firebase_functions.options import set_global_options
 from firebase_admin import initialize_app, firestore
 import json
+from datetime import datetime, timezone
 
 # For cost control, you can set the maximum number of containers that can be
 # running at the same time. This helps mitigate the impact of unexpected
@@ -108,13 +109,37 @@ def ingest(req: https_fn.Request) -> https_fn.Response:
     # Create document path
     doc_path = f"users/{user_id}/resources/{resource_id}"
     
-   
-
+    # Get current server time at the beginning of function execution
+    current_time = datetime.now(timezone.utc)
     
     # Log data to Firestore
     try:
         # Get reference to the document
         doc_ref = db.document(doc_path)
+        
+        # Check if document exists and get the last_update timestamp
+        doc_snapshot = doc_ref.get()
+        
+        if doc_snapshot.exists:
+            doc_data = doc_snapshot.to_dict()
+            last_update = doc_data.get('last_update')
+            
+            if last_update:
+                # Calculate time difference in seconds
+                time_diff = (current_time - last_update).total_seconds()
+                
+                # If last update was within 60 seconds, don't update
+                if time_diff < 60:
+                    logger.info(f"Data received but not logged for user_id: {user_id}, resource_id: {resource_id}. Last update was {time_diff:.1f} seconds ago (less than 60 seconds)")
+                    
+                    return https_fn.Response(
+                        json.dumps({
+                            "success": True,
+                            "message": "Data received but not logged (last update was less than 60 seconds ago)",
+                        }),
+                        status=200,
+                        headers={"Content-Type": "application/json"}
+                    )
         
         # Set the entry data with merge capabilities
         doc_ref.set(request_data, merge=True)
