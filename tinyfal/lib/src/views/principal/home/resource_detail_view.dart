@@ -78,6 +78,69 @@ class _ResourceDetailViewState extends State<ResourceDetailView> {
     return Colors.red[400]!;
   }
 
+  // Helper method to determine status based on data freshness
+  String _getStatusType() {
+    final freshnessStatus = _status?.dataFreshnessStatus ?? "🔴 No data";
+    if (freshnessStatus.contains('🟢')) return "online";
+    if (freshnessStatus.contains('🟡')) return "stale";
+    return "offline";
+  }
+
+  Color _getStatusColor() {
+    switch (_getStatusType()) {
+      case "online":
+        return Colors.green[400]!;
+      case "stale":
+        return Colors.orange[400]!;
+      default:
+        return Colors.red[400]!;
+    }
+  }
+
+  Color _getStatusBackgroundColor() {
+    switch (_getStatusType()) {
+      case "online":
+        return Colors.green[50]!;
+      case "stale":
+        return Colors.orange[50]!;
+      default:
+        return Colors.red[50]!;
+    }
+  }
+
+  Color _getStatusBorderColor() {
+    switch (_getStatusType()) {
+      case "online":
+        return Colors.green[200]!;
+      case "stale":
+        return Colors.orange[200]!;
+      default:
+        return Colors.red[200]!;
+    }
+  }
+
+  Color _getStatusTextColor() {
+    switch (_getStatusType()) {
+      case "online":
+        return Colors.green[700]!;
+      case "stale":
+        return Colors.orange[700]!;
+      default:
+        return Colors.red[700]!;
+    }
+  }
+
+  String _getStatusLabel() {
+    switch (_getStatusType()) {
+      case "online":
+        return "Online";
+      case "stale":
+        return "Stale";
+      default:
+        return "Offline";
+    }
+  }
+
   Future<void> _showDeleteDialog(BuildContext context) async {
     final result = await showDialog<bool>(
       context: context,
@@ -194,22 +257,31 @@ class _ResourceDetailViewState extends State<ResourceDetailView> {
                     ),
                   ),
                   SizedBox(height: 4),
-                  Text(
-                    "Status: Online",
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.green[600],
-                      fontWeight: FontWeight.w500,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        "Last Update ${_lastUpdateFormatted ?? 'Unknown'}",
+                        style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        _status?.dataFreshnessStatus ?? "🔴 No data",
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.green[50],
+                  color: _getStatusBackgroundColor(),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.green[200]!),
+                  border: Border.all(color: _getStatusBorderColor()),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -218,15 +290,15 @@ class _ResourceDetailViewState extends State<ResourceDetailView> {
                       width: 8,
                       height: 8,
                       decoration: BoxDecoration(
-                        color: Colors.green[400],
+                        color: _getStatusColor(),
                         shape: BoxShape.circle,
                       ),
                     ),
                     SizedBox(width: 6),
                     Text(
-                      "Active",
+                      _getStatusLabel(),
                       style: TextStyle(
-                        color: Colors.green[700],
+                        color: _getStatusTextColor(),
                         fontWeight: FontWeight.w500,
                       ),
                     ),

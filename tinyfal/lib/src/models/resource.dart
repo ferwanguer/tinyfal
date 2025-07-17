@@ -433,7 +433,7 @@ class Status {
 
     if (difference.inMinutes <= 2) {
       return "🟢 Live"; // Fresh data
-    } else if (difference.inMinutes <= 5) {
+    } else if (difference.inMinutes <= 3) {
       return "🟡 Recent"; // Slightly old but acceptable
     } else if (difference.inMinutes <= 15) {
       return "🟠 Stale"; // Getting old
