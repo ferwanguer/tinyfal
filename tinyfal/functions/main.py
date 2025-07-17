@@ -129,7 +129,7 @@ def ingest(req: https_fn.Request) -> https_fn.Response:
                 time_diff = (current_time - last_update).total_seconds()
                 
                 # If last update was within 60 seconds, don't update
-                if time_diff < 5:
+                if time_diff < 60:
                     logger.info(f"Data received but not logged for user_id: {user_id}, resource_id: {resource_id}. Last update was {time_diff:.1f} seconds ago (less than 60 seconds)")
                     
                     return https_fn.Response(
