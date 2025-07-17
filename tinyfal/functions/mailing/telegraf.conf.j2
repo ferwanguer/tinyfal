@@ -1,0 +1,60 @@
+###############################################################################
+##  Telegraf – host + Docker metrics  ➟  HTTP endpoint (JSON)
+##  Save as /etc/telegraf/telegraf.conf  (or drop‑in under telegraf.d/)
+###############################################################################
+
+###############################################################################
+#  AGENT
+###############################################################################
+[agent]
+  interval       = "60s"      # collect metrics every 10 s
+  flush_interval = "10s"      # send them every 10 s
+  omit_hostname  = false
+
+###############################################################################
+#  OUTPUTS  —>  HTTP
+###############################################################################
+[[outputs.http]]
+  url         = "https://ingest.tinyfal.com"   # <‑‑ change me
+  method      = "POST"
+  timeout     = "5s"
+
+  # serialise each flush batch as a JSON array
+  data_format          = "json"
+  json_timestamp_units = "1ms"            # (optional) millisecond precision
+
+  # extra HTTP headers
+  [outputs.http.headers]
+    Content-Type  = "application/json"
+    Authorization = "Bearer <YOUR_TOKEN_HERE>"   # <‑‑ OBTAIN IT FROM THE TINYFAL APP
+
+###############################################################################
+#  INPUTS  — host metrics
+###############################################################################
+[[inputs.cpu]]
+  percpu           = true
+  totalcpu         = true
+  collect_cpu_time = false
+  report_active    = false          # keep full idle‑state breakdown
+
+[[inputs.mem]]
+[[inputs.swap]]
+
+[[inputs.disk]]
+  ignore_fs = ["tmpfs", "devtmpfs", "overlay", "aufs", "squashfs"]
+
+[[inputs.net]]
+[[inputs.netstat]]
+
+[[inputs.nstat]]
+  dump_zeros = true                 # include counters that are zero
+
+[[inputs.system]]
+  fieldexclude = ["n_users"]        # drop rarely‑used field
+
+[[inputs.processes]]
+
+###############################################################################
+#  INPUTS  — Docker (minimal, version‑safe)
+###############################################################################
+[[inputs.docker]]
