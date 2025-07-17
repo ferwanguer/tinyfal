@@ -530,8 +530,6 @@ class _ResourceDetailViewState extends State<ResourceDetailView> {
           _buildInfoRow("Client ID", widget.clientUser?.uid ?? "N/A"),
           _buildInfoRow("Token", widget.resource.token ?? "Not Generated"),
           _buildInfoRow("Hostname", _hostName),
-          _buildInfoRow("OS", "Linux"),
-          _buildInfoRow("Architecture", "x86_64"),
           _buildInfoRow("CPU Cores", "$_numberOfCpus"),
           _buildInfoRow("Last Update", _lastUpdateFormatted ?? "Unknown"),
         ],
