@@ -797,6 +797,7 @@ class Status {
   /// DOCKER DATA
   Map<String, dynamic>? get dockerEngine {
     final dockerList = getByName('docker');
+    developer.log('Docker data: $dockerList', name: 'resource.dart:802');
     return dockerList.isNotEmpty ? dockerList.first : null;
   }
 

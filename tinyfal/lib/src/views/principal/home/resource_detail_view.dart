@@ -199,9 +199,9 @@ class _ResourceDetailViewState extends State<ResourceDetailView> {
             _buildAllDiskDevicesCard(),
             SizedBox(height: 16),
 
-            // Network & Docker
-            //_buildNetworkDockerCard(),
-            //SizedBox(height: 16),
+            // Docker Information
+            _buildDockerCard(),
+            SizedBox(height: 16),
 
             // Process Details
             _buildProcessDetailsCard(),
@@ -862,6 +862,336 @@ class _ResourceDetailViewState extends State<ResourceDetailView> {
         ],
       ),
     );
+  }
+
+  Widget _buildDockerCard() {
+    // Get all Docker-related data
+    final containerStatus = _status?.dockerContainerStatus ?? [];
+    final containerMemory = _status?.dockerContainerMemory ?? [];
+    final containerCpu = _status?.dockerContainerCpu ?? [];
+
+    // Get basic Docker stats
+    final totalContainers = _status?.dockerContainersTotal ?? 0;
+    final runningContainers = _status?.dockerContainersRunning ?? 0;
+
+    // Don't show if no Docker data
+    if (totalContainers == 0) {
+      return SizedBox.shrink();
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey[200]!,
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.developer_board, color: Colors.blue[600], size: 20),
+              SizedBox(width: 8),
+              Text(
+                "Docker Containers",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[800],
+                ),
+              ),
+              Spacer(),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: runningContainers > 0
+                      ? Colors.green[100]
+                      : Colors.grey[100],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  "$runningContainers/$totalContainers running",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: runningContainers > 0
+                        ? Colors.green[700]
+                        : Colors.grey[700],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+
+          // Show running containers if any
+          if (runningContainers > 0) ...[
+            ...containerStatus.map(
+              (container) =>
+                  _buildContainerItem(container, containerMemory, containerCpu),
+            ),
+          ] else ...[
+            // Show no running containers message
+            Container(
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey[200]!),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.grey[600], size: 20),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      "No containers are currently running",
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContainerItem(
+    Map<String, dynamic> container,
+    List<Map<String, dynamic>> memoryData,
+    List<Map<String, dynamic>> cpuData,
+  ) {
+    final tags = container['tags'] as Map<String, dynamic>?;
+    final fields = container['fields'] as Map<String, dynamic>?;
+
+    if (tags == null || fields == null) return SizedBox.shrink();
+
+    // Extract container information from tags
+    final containerName = tags['container_name'] as String? ?? 'Unknown';
+    final containerImage = tags['container_image'] as String? ?? 'Unknown';
+    final containerVersion = tags['container_version'] as String? ?? 'latest';
+
+    // Extract uptime and other info from fields
+    final uptimeNs = fields['uptime_ns'] as num? ?? 0;
+    final uptimeSeconds =
+        uptimeNs / 1000000000; // Convert nanoseconds to seconds
+    final pid = fields['pid'] as num? ?? 0;
+    final exitCode = fields['exitcode'] as num? ?? 0;
+
+    // Find memory data for this container
+    final containerMemory = memoryData.firstWhere((mem) {
+      final memTags = mem['tags'] as Map<String, dynamic>?;
+      return memTags != null && memTags['container_name'] == containerName;
+    }, orElse: () => <String, dynamic>{});
+
+    // Find CPU data for this container
+    final containerCpuData = cpuData.firstWhere((cpu) {
+      final cpuTags = cpu['tags'] as Map<String, dynamic>?;
+      return cpuTags != null && cpuTags['container_name'] == containerName;
+    }, orElse: () => <String, dynamic>{});
+
+    // Extract memory info
+    final memFields = containerMemory['fields'] as Map<String, dynamic>?;
+    final memUsage = memFields?['usage'] as num? ?? 0;
+    final memLimit = memFields?['limit'] as num? ?? 0;
+    final memUsageMB = memUsage / 1024 / 1024;
+    final memLimitMB = memLimit / 1024 / 1024;
+    final memPercent = memLimit > 0 ? (memUsage / memLimit * 100) : 0.0;
+
+    // Extract CPU info
+    final cpuFields = containerCpuData['fields'] as Map<String, dynamic>?;
+    final cpuUsage = cpuFields?['usage_percent'] as num? ?? 0;
+
+    // Format uptime
+    final uptimeDuration = Duration(seconds: uptimeSeconds.round());
+    final uptimeFormatted = _formatDuration(uptimeDuration);
+
+    return Container(
+      margin: EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Container header
+          Row(
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: exitCode == 0 ? Colors.green[400] : Colors.red[400],
+                  shape: BoxShape.circle,
+                ),
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      containerName,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[800],
+                      ),
+                    ),
+                    Text(
+                      "$containerImage:$containerVersion",
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: exitCode == 0 ? Colors.green[100] : Colors.red[100],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  exitCode == 0 ? "RUNNING" : "ERROR",
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: exitCode == 0 ? Colors.green[700] : Colors.red[700],
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12),
+
+          // Container details
+          Row(
+            children: [
+              Expanded(child: _buildContainerDetailItem("PID", "$pid")),
+              Expanded(
+                child: _buildContainerDetailItem("Uptime", uptimeFormatted),
+              ),
+            ],
+          ),
+
+          if (memUsage > 0 || cpuUsage > 0) ...[
+            SizedBox(height: 12),
+            // Resource usage
+            Row(
+              children: [
+                if (cpuUsage > 0)
+                  Expanded(
+                    child: _buildContainerMetric(
+                      "CPU",
+                      "${cpuUsage.toStringAsFixed(1)}%",
+                      cpuUsage / 100,
+                      _getUsageColor(cpuUsage.round()),
+                    ),
+                  ),
+                if (memUsage > 0 && cpuUsage > 0) SizedBox(width: 16),
+                if (memUsage > 0)
+                  Expanded(
+                    child: _buildContainerMetric(
+                      "Memory",
+                      "${memUsageMB.toStringAsFixed(0)} MB${memLimit > 0 ? ' / ${memLimitMB.toStringAsFixed(0)} MB' : ''}",
+                      memPercent / 100,
+                      _getUsageColor(memPercent.round()),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContainerDetailItem(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey[600],
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey[800],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildContainerMetric(
+    String label,
+    String value,
+    double progress,
+    Color color,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[600],
+              ),
+            ),
+            Text(
+              value,
+              style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+            ),
+          ],
+        ),
+        SizedBox(height: 4),
+        LinearProgressIndicator(
+          value: progress.clamp(0.0, 1.0),
+          backgroundColor: Colors.grey[200],
+          valueColor: AlwaysStoppedAnimation<Color>(color),
+          minHeight: 4,
+        ),
+      ],
+    );
+  }
+
+  String _formatDuration(Duration duration) {
+    final days = duration.inDays;
+    final hours = duration.inHours % 24;
+    final minutes = duration.inMinutes % 60;
+
+    if (days > 0) {
+      return "${days}d ${hours}h";
+    } else if (hours > 0) {
+      return "${hours}h ${minutes}m";
+    } else {
+      return "${minutes}m";
+    }
   }
 }
 
