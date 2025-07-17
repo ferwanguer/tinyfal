@@ -139,7 +139,9 @@ class Status {
     return swapList.isNotEmpty ? swapList.first : null;
   }
 
-  /// Get used swap percentage (rounded up, no decimal places)
+  /// Get used swap percentage (calculated like btop: (total - free) / total * 100)
+  /// Swap memory is virtual memory that uses disk space when physical RAM is full.
+  /// When RAM usage is high, the OS moves less-used data to swap to free up RAM.
   int? get usedSwapPercent {
     final swapData = swap;
     if (swapData == null) return null;
@@ -147,29 +149,45 @@ class Status {
     final fields = swapData['fields'] as Map<String, dynamic>?;
     if (fields == null) return null;
 
-    final usedPercent = fields['used_percent'];
-    if (usedPercent == null) return null;
+    final total = fields['total'];
+    final free = fields['free'];
 
-    return (usedPercent is num) ? usedPercent.toDouble().ceil() : null;
+    // Use btop-style calculation: (total - free) / total * 100
+    if (total != null && free != null && total is num && free is num) {
+      // If total is 0 (no swap configured), return 0
+      if (total.toDouble() == 0) return 0;
+
+      final btopUsed = total.toDouble() - free.toDouble();
+      final btopPercent = (btopUsed / total.toDouble()) * 100;
+      return btopPercent.ceil().clamp(0, 100);
+    }
+
+    return null;
   }
 
-  /// Get swap total in GB
-  int? get swapTotalGB {
+  /// Get swap total in GB (with one decimal place for small swap sizes)
+  double? get swapTotalGB {
     final swapData = swap;
+
     if (swapData == null) return null;
 
     final fields = swapData['fields'] as Map<String, dynamic>?;
+    developer.log('Swap fields: $fields', name: 'resource.dart:177');
     if (fields == null) return null;
 
     final total = fields['total'];
     if (total == null) return null;
 
-    return (total is num)
-        ? (total.toDouble() / 1024 / 1024 / 1024).round()
-        : null;
+    if (total is num) {
+      final totalGB = total.toDouble() / 1024 / 1024 / 1024;
+      // Return with one decimal place for small swap sizes
+      return double.parse(totalGB.toStringAsFixed(1));
+    }
+
+    return null;
   }
 
-  /// Get swap used in MB
+  /// Get swap used in MB (calculated like btop: total - free)
   int? get swapUsedMB {
     final swapData = swap;
     if (swapData == null) return null;
@@ -177,10 +195,16 @@ class Status {
     final fields = swapData['fields'] as Map<String, dynamic>?;
     if (fields == null) return null;
 
-    final used = fields['used'];
-    if (used == null) return null;
+    final total = fields['total'];
+    final free = fields['free'];
 
-    return (used is num) ? (used.toDouble() / 1024 / 1024).round() : null;
+    // Use btop-style calculation: total - free
+    if (total != null && free != null && total is num && free is num) {
+      final btopUsed = total.toDouble() - free.toDouble();
+      return (btopUsed / 1024 / 1024).round();
+    }
+
+    return null;
   }
 
   /// CPU DATA
@@ -497,9 +521,12 @@ class Status {
   Map<String, dynamic>? get disk {
     final diskList = getByName('disk');
     // Look for the root disk (path="/")
+    // developer.log('Disk usage fields: $diskList', name: 'resource.dart:500');
     for (final diskData in diskList) {
       final tags = diskData['tags'] as Map<String, dynamic>?;
       if (tags != null && tags['path'] == '/') {
+        final fields = diskData['fields'] as Map<String, dynamic>?;
+        developer.log('Root disk fields: $fields', name: 'resource.dart:505');
         return diskData;
       }
     }
@@ -507,7 +534,7 @@ class Status {
     return diskList.isNotEmpty ? diskList.first : null;
   }
 
-  /// Get disk usage percentage
+  /// Get disk usage percentage (calculated like btop: (total - free) / total * 100)
   int? get diskUsagePercent {
     final diskData = disk;
     if (diskData == null) return null;
@@ -515,10 +542,17 @@ class Status {
     final fields = diskData['fields'] as Map<String, dynamic>?;
     if (fields == null) return null;
 
-    final usedPercent = fields['used_percent'];
-    if (usedPercent == null) return null;
+    final total = fields['total'];
+    final free = fields['free'];
 
-    return (usedPercent is num) ? usedPercent.toDouble().ceil() : null;
+    // Use btop-style calculation: (total - free) / total * 100
+    if (total != null && free != null && total is num && free is num) {
+      final btopUsed = total.toDouble() - free.toDouble().floor();
+      final btopPercent = (btopUsed / total.toDouble()) * 100;
+      return btopPercent.ceil().clamp(0, 100);
+    }
+
+    return null;
   }
 
   /// Get disk free space in GB
@@ -1082,7 +1116,7 @@ class Status {
     return tags['fstype'] as String?;
   }
 
-  /// Get disk used space in GB
+  /// Get disk used space in GB (calculated like btop: total - free)
   int? get diskUsedGB {
     final diskData = disk;
     if (diskData == null) return null;
@@ -1090,12 +1124,16 @@ class Status {
     final fields = diskData['fields'] as Map<String, dynamic>?;
     if (fields == null) return null;
 
-    final used = fields['used'];
-    if (used == null) return null;
+    final total = fields['total'];
+    final free = fields['free'];
 
-    return (used is num)
-        ? (used.toDouble() / 1024 / 1024 / 1024).round()
-        : null;
+    // Use btop-style calculation: total - free
+    if (total != null && free != null && total is num && free is num) {
+      final btopUsed = total.toDouble() - free.toDouble();
+      return (btopUsed / 1024 / 1024 / 1024).round();
+    }
+
+    return null;
   }
 
   /// Get all network interfaces data
