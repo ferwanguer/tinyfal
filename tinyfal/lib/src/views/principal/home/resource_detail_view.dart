@@ -196,8 +196,8 @@ class _ResourceDetailViewState extends State<ResourceDetailView> {
             SizedBox(height: 16),
 
             // All Disk Devices
-            //_buildAllDiskDevicesCard(),
-            //SizedBox(height: 16),
+            _buildAllDiskDevicesCard(),
+            SizedBox(height: 16),
 
             // Network & Docker
             //_buildNetworkDockerCard(),
@@ -732,6 +732,135 @@ class _ResourceDetailViewState extends State<ResourceDetailView> {
             style: TextStyle(fontSize: 10, color: Colors.grey[500]),
           ),
       ],
+    );
+  }
+
+  Widget _buildAllDiskDevicesCard() {
+    final allDisks = _status?.allDisks ?? [];
+
+    // Filter out the main disk (root filesystem) since it's already shown above
+    final otherDisks = allDisks.where((disk) {
+      final tags = disk['tags'] as Map<String, dynamic>?;
+      return tags != null && tags['path'] != '/';
+    }).toList();
+
+    // Don't show the card if there are no other disks
+    if (otherDisks.isEmpty) {
+      return SizedBox.shrink();
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey[200]!,
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Additional Storage Devices",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[800],
+            ),
+          ),
+          SizedBox(height: 16),
+          ...otherDisks.map((disk) => _buildDiskEntry(disk)).toList(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDiskEntry(Map<String, dynamic> disk) {
+    final tags = disk['tags'] as Map<String, dynamic>?;
+    final fields = disk['fields'] as Map<String, dynamic>?;
+
+    if (tags == null || fields == null) return SizedBox.shrink();
+
+    final path = tags['path'] as String? ?? 'Unknown';
+    final device = tags['device'] as String? ?? 'Unknown';
+    final fstype = tags['fstype'] as String? ?? 'Unknown';
+
+    final total = fields['total'] as num?;
+    final free = fields['free'] as num?;
+
+    if (total == null || free == null) return SizedBox.shrink();
+
+    // Calculate usage using btop-style calculation
+    final used = total.toDouble() - free.toDouble();
+    final usagePercent = (used / total.toDouble() * 100).round();
+    final totalGB = (total.toDouble() / 1024 / 1024 / 1024);
+    final usedGB = (used / 1024 / 1024 / 1024);
+    final freeGB = (free.toDouble() / 1024 / 1024 / 1024);
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "$path ($device)",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                    Text(
+                      "Type: $fstype",
+                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                "${usedGB.toStringAsFixed(2)} GB / ${totalGB.toStringAsFixed(2)} GB",
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              ),
+            ],
+          ),
+          SizedBox(height: 8),
+          LinearProgressIndicator(
+            value: usagePercent / 100,
+            backgroundColor: Colors.grey[200],
+            valueColor: AlwaysStoppedAnimation<Color>(
+              _getUsageColor(usagePercent),
+            ),
+            minHeight: 6,
+          ),
+          SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Used: $usagePercent%",
+                style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+              ),
+              Text(
+                "Free: ${freeGB.toStringAsFixed(2)} GB",
+                style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

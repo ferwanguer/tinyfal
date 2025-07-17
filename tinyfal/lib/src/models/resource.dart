@@ -172,7 +172,7 @@ class Status {
     if (swapData == null) return null;
 
     final fields = swapData['fields'] as Map<String, dynamic>?;
-    developer.log('Swap fields: $fields', name: 'resource.dart:177');
+    //developer.log('Swap fields: $fields', name: 'resource.dart:177');
     if (fields == null) return null;
 
     final total = fields['total'];
@@ -526,7 +526,7 @@ class Status {
       final tags = diskData['tags'] as Map<String, dynamic>?;
       if (tags != null && tags['path'] == '/') {
         final fields = diskData['fields'] as Map<String, dynamic>?;
-        developer.log('Root disk fields: $fields', name: 'resource.dart:505');
+        //developer.log('Root disk fields: $fields', name: 'resource.dart:505');
         return diskData;
       }
     }
