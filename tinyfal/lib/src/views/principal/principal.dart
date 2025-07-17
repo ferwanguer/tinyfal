@@ -9,6 +9,7 @@ import 'package:tinyfal/src/models/preferences.dart'; // Import the Preferences 
 import 'package:provider/provider.dart'; // Import Provider package
 
 import 'package:tinyfal/src/views/settings/settings.dart';
+import 'package:tinyfal/src/views/principal/home/create_resource_dialog.dart';
 
 // SET UP HERE THE PREFERENCES STREAM
 /// Displays a list of SampleItems.
@@ -115,16 +116,13 @@ class _PrincipalState extends State<Principal> {
             ),
             floatingActionButton: FloatingActionButton(
               onPressed: () {
-                //TODO Detail view of the resource
-                //   Navigator.push(
-                //     context,
-                //     MaterialPageRoute(
-                //       builder: (context) => Write(
-                //         clientUser: widget.clientUser,
-                //         preferences: preferences,
-                //       ),
-                //     ),
-                //   );
+                if (widget.clientUser != null) {
+                  showDialog(
+                    context: context,
+                    builder: (context) =>
+                        CreateResourceDialog(clientUser: widget.clientUser!),
+                  );
+                }
               },
               backgroundColor: const Color.fromARGB(255, 119, 200, 238),
               child: FaIcon(

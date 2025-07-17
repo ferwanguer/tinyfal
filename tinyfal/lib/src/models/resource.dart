@@ -600,6 +600,11 @@ class Resource {
     this.token,
   });
 
+  Future<void> createInFirestore() async {
+    String generatedId = await createResource(clientUser!.uid, this);
+    uid = generatedId; // Update the resource with the auto-generated ID
+  }
+
   Future<void> uploadToFirestore() async {
     await updateResource(clientUser!.uid, uid!, this);
   }
@@ -623,6 +628,11 @@ class Resource {
         (_) => chars.codeUnitAt(random.nextInt(chars.length)),
       ),
     );
+  }
+
+  /// Create a new random token (local only, no database update)
+  void generateToken() {
+    token = _generateRandomToken();
   }
 
   /// Create a new random token

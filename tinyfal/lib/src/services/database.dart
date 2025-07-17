@@ -71,6 +71,21 @@ Future<void> createUserPreference(String userId, String email) async {
   }
 }
 
+// Function to create a new resource document for a user
+Future<String> createResource(String userId, Resource resource) async {
+  DocumentReference docRef = await users
+      .doc(userId)
+      .collection('resources')
+      .add({
+        'title': resource.title,
+        'creation_timestamp': FieldValue.serverTimestamp(),
+        'token': resource.token,
+        'metrics': null, // Initialize with no metrics data
+      });
+
+  return docRef.id; // Return the auto-generated document ID
+}
+
 // Function to update a document under 'escritos' collection for a user
 Future<void> updateResource(
   String userId,
