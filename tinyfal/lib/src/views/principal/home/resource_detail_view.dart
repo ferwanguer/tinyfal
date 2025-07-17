@@ -41,16 +41,13 @@ class _ResourceDetailViewState extends State<ResourceDetailView> {
 
   // Memory information in GB
   double get _memoryTotalGB {
-    // Convert bytes to GB, fallback to estimating from disk total if not available
-    final diskTotal = _status?.diskTotalGB?.toDouble() ?? 500.0;
-    return diskTotal *
-        0.016; // Rough estimate: ~1.6% of disk space is typical for RAM
+    // Get actual memory total from telegraf data
+    return _status?.memoryTotalGB ?? 0.0;
   }
 
   double get _memoryUsedGB {
-    final totalGB = _memoryTotalGB;
-    final usedPercent = _memoryUsage;
-    return (totalGB * usedPercent / 100);
+    // Get actual memory used from telegraf data
+    return _status?.memoryUsedGB ?? 0.0;
   }
 
   // Disk information
@@ -99,7 +96,7 @@ class _ResourceDetailViewState extends State<ResourceDetailView> {
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: Text(
-          widget.resource.title ?? "Server Details",
+          "Details",
           style: TextStyle(
             color: Colors.grey[800],
             fontWeight: FontWeight.w600,

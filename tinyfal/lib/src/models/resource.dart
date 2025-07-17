@@ -99,6 +99,34 @@ class Status {
     return (cached is num) ? (cached.toDouble() / 1024 / 1024).ceil() : null;
   }
 
+  /// Get total memory in GB
+  double? get memoryTotalGB {
+    final memData = mem;
+    if (memData == null) return null;
+
+    final fields = memData['fields'] as Map<String, dynamic>?;
+    if (fields == null) return null;
+
+    final total = fields['total'];
+    if (total == null) return null;
+
+    return (total is num) ? (total.toDouble() / 1024 / 1024 / 1024) : null;
+  }
+
+  /// Get used memory in GB
+  double? get memoryUsedGB {
+    final memData = mem;
+    if (memData == null) return null;
+
+    final fields = memData['fields'] as Map<String, dynamic>?;
+    if (fields == null) return null;
+
+    final used = fields['used'];
+    if (used == null) return null;
+
+    return (used is num) ? (used.toDouble() / 1024 / 1024 / 1024) : null;
+  }
+
   /// SWAP MEMORY
   Map<String, dynamic>? get swap {
     final swapList = getByName('swap');
