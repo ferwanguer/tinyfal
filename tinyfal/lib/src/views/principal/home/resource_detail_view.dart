@@ -65,7 +65,7 @@ class _ResourceDetailViewState extends State<ResourceDetailView> {
   int get _inodesTotal => _status?.diskInodesTotal ?? 0;
 
   // Swap information
-  int get _swapTotalGB => _status?.swapTotalGB ?? 0;
+  num get _swapTotalGB => _status?.swapTotalGB ?? 0;
   int get _swapUsedMB => _status?.swapUsedMB ?? 0;
 
   // Process breakdown
