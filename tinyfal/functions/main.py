@@ -119,6 +119,9 @@ def ingest(req: https_fn.Request) -> https_fn.Response:
         # Set the entry data with merge capabilities
         doc_ref.set(request_data, merge=True)
         
+        # Log the last_update timestamp
+        doc_ref.set({"last_update": firestore.SERVER_TIMESTAMP}, merge=True)
+        
         # Log successful data logging
         logger.info(f"Data logged successfully for user_id: {user_id}, resource_id: {resource_id}")
         
