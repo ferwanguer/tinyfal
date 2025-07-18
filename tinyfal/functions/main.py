@@ -236,12 +236,12 @@ def on_resource_created(event: firestore_fn.Event[firestore_fn.DocumentSnapshot 
         
         # Send the email
         subject = f"Nuevo recurso creado: {resource_title}"
-        status_code = mailto(user_email, subject, email_content, api_key)
+        response = mailto(user_email, subject, email_content, api_key)
         
-        if status_code == 200:
+        if response.status_code == 200:
             logger.info(f"Email sent successfully to {user_email} for resource: {resource_title}")
         else:
-            logger.error(f"Failed to send email. Status code: {status_code}")
+            logger.error(f"Failed to send email to {user_email}. Status: {response.status_code}, Reason: {response.reason}, Response: {response.text}")
             
     except Exception as e:
         logger.error(f"Error in on_resource_created: {str(e)}")

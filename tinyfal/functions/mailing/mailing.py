@@ -126,7 +126,7 @@ def mailto(to, subject, html_content, api_key):
     }
     response = requests.post(url, auth=auth, data=data)
 
-    return response.status_code
+    return response
 
 def render_resource_created_email(resource_title):
     """Render the resource creation email template with the given resource title."""
