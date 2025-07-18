@@ -105,6 +105,7 @@ def ingest(req: https_fn.Request) -> https_fn.Response:
             headers={"Content-Type": "application/json"}
         )
     
+    logger.info("DATA RECEIVED: %s", request_data)
     # user_id and resource_id are already determined from token lookup above
     # Create document path
     doc_path = f"users/{user_id}/resources/{resource_id}"
