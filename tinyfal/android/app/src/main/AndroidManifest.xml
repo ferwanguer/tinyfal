@@ -1,4 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Internet permission for URL launcher -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Query permission for URL launcher -->
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+    
     <application
         android:label="tinyfal"
         android:name="${applicationName}"
@@ -37,6 +42,16 @@
 
          In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
     <queries>
+        <!-- URL Launcher queries -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="http" />
+        </intent>
+        <!-- Existing query for text processing -->
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>

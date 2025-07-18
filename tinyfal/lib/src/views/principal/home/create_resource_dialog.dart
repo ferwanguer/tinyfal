@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:tinyfal/src/models/client_user.dart';
 import 'package:tinyfal/src/models/resource.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CreateResourceDialog extends StatefulWidget {
   final ClientUser clientUser;
@@ -131,14 +133,107 @@ class _CreateResourceDialogState extends State<CreateResourceDialog> {
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: Colors.blue[200]!),
               ),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.info, color: Colors.blue[600], size: 20),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'A unique token will be generated for this resource to receive monitoring data.',
-                      style: TextStyle(color: Colors.blue[700], fontSize: 12),
+                  Row(
+                    children: [
+                      Icon(Icons.info, color: Colors.blue[600], size: 20),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'A unique token will be generated for this resource to receive monitoring data.',
+                          style: TextStyle(
+                            color: Colors.blue[700],
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: () async {
+                      const url = 'https://literatos.net';
+
+                      try {
+                        // Try multiple launch methods for better iOS compatibility
+                        final uri = Uri.parse(url);
+
+                        // Method 1: Try with platformDefault mode first
+                        try {
+                          await launchUrl(
+                            uri,
+                            mode: LaunchMode.platformDefault,
+                          );
+                        } catch (e) {
+                          // If that fails, try external application
+                          try {
+                            await launchUrl(
+                              uri,
+                              mode: LaunchMode.externalApplication,
+                            );
+                          } catch (e2) {
+                            // If that also fails, try in-app web view
+                            try {
+                              await launchUrl(
+                                uri,
+                                mode: LaunchMode.inAppWebView,
+                              );
+                            } catch (e3) {
+                              // Final fallback - copy to clipboard
+                              await Clipboard.setData(ClipboardData(text: url));
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Link copied to clipboard: $url',
+                                    ),
+                                    backgroundColor: Colors.blue,
+                                    duration: Duration(seconds: 3),
+                                  ),
+                                );
+                              }
+                            }
+                          }
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Could not open link. Error: $e'),
+                              backgroundColor: Colors.orange,
+                              duration: Duration(seconds: 5),
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.help_outline,
+                          color: Colors.blue[600],
+                          size: 16,
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          'How can I configure my server?',
+                          style: TextStyle(
+                            color: Colors.blue[700],
+                            fontSize: 12,
+                            decoration: TextDecoration.underline,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        SizedBox(width: 4),
+                        Icon(
+                          Icons.open_in_new,
+                          color: Colors.blue[600],
+                          size: 12,
+                        ),
+                      ],
                     ),
                   ),
                 ],

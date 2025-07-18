@@ -1003,10 +1003,7 @@ class _ResourceDetailViewState extends State<ResourceDetailView> {
     // Extract memory info
     final memFields = containerMemory['fields'] as Map<String, dynamic>?;
     final memUsage = memFields?['usage'] as num? ?? 0;
-    final memLimit = memFields?['limit'] as num? ?? 0;
     final memUsageMB = memUsage / 1024 / 1024;
-    final memLimitMB = memLimit / 1024 / 1024;
-    final memPercent = memLimit > 0 ? (memUsage / memLimit * 100) : 0.0;
 
     // Extract CPU info
     final cpuFields = containerCpuData['fields'] as Map<String, dynamic>?;
@@ -1094,21 +1091,17 @@ class _ResourceDetailViewState extends State<ResourceDetailView> {
               children: [
                 if (cpuUsage > 0)
                   Expanded(
-                    child: _buildContainerMetric(
+                    child: _buildContainerDetailItem(
                       "CPU",
                       "${cpuUsage.toStringAsFixed(1)}%",
-                      cpuUsage / 100,
-                      _getUsageColor(cpuUsage.round()),
                     ),
                   ),
                 if (memUsage > 0 && cpuUsage > 0) SizedBox(width: 16),
                 if (memUsage > 0)
                   Expanded(
-                    child: _buildContainerMetric(
+                    child: _buildContainerDetailItem(
                       "Memory",
-                      "${memUsageMB.toStringAsFixed(0)} MB${memLimit > 0 ? ' / ${memLimitMB.toStringAsFixed(0)} MB' : ''}",
-                      memPercent / 100,
-                      _getUsageColor(memPercent.round()),
+                      "${memUsageMB.toStringAsFixed(0)} MB",
                     ),
                   ),
               ],
@@ -1138,43 +1131,6 @@ class _ResourceDetailViewState extends State<ResourceDetailView> {
             fontWeight: FontWeight.w600,
             color: Colors.grey[800],
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildContainerMetric(
-    String label,
-    String value,
-    double progress,
-    Color color,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey[600],
-              ),
-            ),
-            Text(
-              value,
-              style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-            ),
-          ],
-        ),
-        SizedBox(height: 4),
-        LinearProgressIndicator(
-          value: progress.clamp(0.0, 1.0),
-          backgroundColor: Colors.grey[200],
-          valueColor: AlwaysStoppedAnimation<Color>(color),
-          minHeight: 4,
         ),
       ],
     );
