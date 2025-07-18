@@ -2,7 +2,7 @@ import requests
 from jinja2 import Template
 
 url = "https://api.forwardemail.net/v1/emails"
-auth = ('api_key_here', '')  # Username and empty password
+ # Username and empty password
 
 
 
@@ -69,6 +69,37 @@ contest_submission_template = Template(contest_submission_html_template)
 contest_submission_html_content = contest_submission_template.render()
 
 ##########################################################################################
+# Resource creation email template
+
+resource_created_html_template = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nuevo recurso creado - Tinyfal</title>
+</head>
+<body>
+    <div>
+        <h1>¡Tu recurso ha sido creado exitosamente!</h1>
+        
+        <p>Hola,</p>
+        <p>Te informamos que tu nuevo recurso <strong>"{{ resource_title }}"</strong> ha sido creado exitosamente en tu cuenta de Tinyfal.</p>
+        <p>Ya puedes comenzar a enviar datos a este recurso utilizando el token que se generó para él.</p>
+        
+        <p>Puedes acceder a tu recurso y ver los datos en tiempo real desde tu panel de control en la aplicación.</p>
+        
+        <div>
+            <p>Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos en <a href="mailto:app@tinyfal.com">app@tinyfal.com</a>.</p>
+            <p>&copy; 2025 Tinyfal. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+# Create a Jinja2 template object for resource creation
+resource_created_template = Template(resource_created_html_template)
+
+##########################################################################################
 # Daily summary
 
 daily_summary_html= """
@@ -83,10 +114,12 @@ daily_summary_html= """
 daily_summary_template = Template(daily_summary_html)
 
 ##########################################################################################
-def mailto(to, subject, html_content):
+def mailto(to, subject, html_content, api_key):
+
+    auth = (api_key, '') 
     # Send the email using the Forward Email API
     data = {
-    'from': 'app@literatos.net',
+    'from': 'app@tinyfal.com',
     'to': to,
     'subject': subject,
     'html' : html_content,
@@ -94,6 +127,10 @@ def mailto(to, subject, html_content):
     response = requests.post(url, auth=auth, data=data)
 
     return response.status_code
+
+def render_resource_created_email(resource_title):
+    """Render the resource creation email template with the given resource title."""
+    return resource_created_template.render(resource_title=resource_title)
 
 if __name__ == "__main__":
     mailto("ferwanguer@me.com", "Bienvenido a Literatos", welcome_html_content)

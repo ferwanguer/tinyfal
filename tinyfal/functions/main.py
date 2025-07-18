@@ -2,11 +2,16 @@
 # To get started, simply uncomment the below code or create your own.
 # Deploy with `firebase deploy`
 
-from firebase_functions import https_fn, logger
+from firebase_functions import https_fn, logger, firestore_fn
 from firebase_functions.options import set_global_options
 from firebase_admin import initialize_app, firestore
+from firebase_functions.params import SecretParam
+
 import json
 from datetime import datetime, timezone
+
+# Import mailing functionality
+from mailing.mailing import mailto, render_resource_created_email
 
 # For cost control, you can set the maximum number of containers that can be
 # running at the same time. This helps mitigate the impact of unexpected
@@ -14,6 +19,14 @@ from datetime import datetime, timezone
 # limit. You can override the limit for each function using the max_instances
 # parameter in the decorator, e.g. @https_fn.on_request(max_instances=5).
 set_global_options(max_instances=10)
+
+
+## Secrets
+
+FW_EMAIL_API_KEY = SecretParam('FW_EMAIL_API_KEY')
+
+
+
 
 # Initialize Firebase Admin SDK
 initialize_app()
@@ -170,6 +183,69 @@ def ingest(req: https_fn.Request) -> https_fn.Response:
             status=500,
             headers={"Content-Type": "application/json"}
         ) 
+
+
+@firestore_fn.on_document_created(document="users/{user_id}/resources/{resource_id}", secrets=[FW_EMAIL_API_KEY])
+def on_resource_created(event: firestore_fn.Event[firestore_fn.DocumentSnapshot | None]) -> None:
+    """
+    Firebase function that triggers when a new resource is created.
+    Sends an email notification to the user.
+    """
+    
+    # Get the document data
+    if not event.data:
+        logger.error("No document data found in the event")
+        return
+    
+    # Extract user_id and resource_id from the document path
+    path_parts = event.data.reference.path.split('/')
+    if len(path_parts) < 4:
+        logger.error(f"Invalid document path: {event.data.reference.path}")
+        return
+    
+    user_id = path_parts[1]  # users/{user_id}/resources/{resource_id}
+    resource_id = path_parts[3]
+    
+    logger.info(f"Resource created - User ID: {user_id}, Resource ID: {resource_id}")
+    
+    try:
+        # Get the document data
+        resource_data = event.data.to_dict()
+        resource_title = resource_data.get('title', 'Sin título')
+        
+        # Get the user's email from Firestore
+        db = firestore.client()
+        user_doc = db.collection('users').document(user_id).get()
+        
+        if not user_doc.exists:
+            logger.error(f"User document not found for user_id: {user_id}")
+            return
+        
+        user_data = user_doc.to_dict()
+        user_email = user_data.get('email')
+        
+        if not user_email:
+            logger.error(f"No email found for user_id: {user_id}")
+            return
+        
+        # Get the API key for email sending
+        api_key = FW_EMAIL_API_KEY.value
+        
+        # Render the email content
+        email_content = render_resource_created_email(resource_title)
+        
+        # Send the email
+        subject = f"Nuevo recurso creado: {resource_title}"
+        status_code = mailto(user_email, subject, email_content, api_key)
+        
+        if status_code == 200:
+            logger.info(f"Email sent successfully to {user_email} for resource: {resource_title}")
+        else:
+            logger.error(f"Failed to send email. Status code: {status_code}")
+            
+    except Exception as e:
+        logger.error(f"Error in on_resource_created: {str(e)}")
+
 
 # @https_fn.on_request()
 # def on_request_example(req: https_fn.Request) -> https_fn.Response:
