@@ -528,7 +528,7 @@ class _ResourceDetailViewState extends State<ResourceDetailView> {
           SizedBox(height: 20),
           _buildInfoRow("Server ID", widget.resource.uid ?? "N/A"),
           _buildInfoRow("Client ID", widget.clientUser?.uid ?? "N/A"),
-          _buildInfoRow("Token", widget.resource.token ?? "Not Generated"),
+
           _buildInfoRow("Hostname", _hostName),
           _buildInfoRow("CPU Cores", "$_numberOfCpus"),
           _buildInfoRow("Last Update", _lastUpdateFormatted ?? "Unknown"),
