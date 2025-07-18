@@ -1,2 +1,3 @@
 tinyfal/android/app/google-services.json
 tinyfal/lib/firebase_options.dart
+tinyfal/functions/.env
