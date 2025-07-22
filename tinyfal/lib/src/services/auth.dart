@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -33,7 +34,7 @@ Future<UserCredential?> signInWithGoogle() async {
 
       return await FirebaseAuth.instance.signInWithCredential(credential);
     } catch (e) {
-      print('Error signing in with Google: $e');
+      developer.log('Error signing in with Google: $e');
       return null;
     }
   }
@@ -51,10 +52,10 @@ Future<UserCredential?> signInWithApple() async {
       final credential = await FirebaseAuth.instance.signInWithProvider(
         appleProvider,
       );
-      print(credential);
+      developer.log('Apple sign in credential: $credential');
       return credential;
     } catch (e) {
-      print('Error signing in with Apple: $e');
+      developer.log('Error signing in with Apple: $e');
       return null;
     }
   }
@@ -68,7 +69,7 @@ Future<UserCredential?> signInWithEmail(String email, String password) async {
     );
     return credential;
   } catch (e) {
-    print('Error signing in with email: $e');
+    developer.log('Error signing in with email: $e');
     rethrow;
   }
 }
@@ -85,7 +86,7 @@ Future<UserCredential?> registerWithEmail(String email, String password) async {
 
     return credential;
   } catch (e) {
-    print('Error registering with email: $e');
+    developer.log('Error registering with email: $e');
     rethrow;
   }
 }
@@ -97,7 +98,7 @@ Future<void> sendEmailVerification() async {
       await user.sendEmailVerification();
     }
   } catch (e) {
-    print('Error sending email verification: $e');
+    developer.log('Error sending email verification: $e');
     rethrow;
   }
 }
@@ -106,7 +107,7 @@ Future<void> resetPassword(String email) async {
   try {
     await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
   } catch (e) {
-    print('Error sending password reset email: $e');
+    developer.log('Error sending password reset email: $e');
     rethrow;
   }
 }
@@ -118,7 +119,7 @@ Future<void> reloadUser() async {
       await user.reload();
     }
   } catch (e) {
-    print('Error reloading user: $e');
+    developer.log('Error reloading user: $e');
     rethrow;
   }
 }
@@ -150,5 +151,27 @@ Future signOut() async {
     // Note: Apple sign out does not have a direct method, but you can clear the session if needed
   } catch (e) {
     return null;
+  }
+}
+
+// delete account
+Future<bool> deleteAccount() async {
+  try {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      // Delete the user account
+      await user.delete();
+      // Sign out from all providers
+      await GoogleSignIn().signOut();
+      return true;
+    }
+    return false;
+  } catch (e) {
+    developer.log('Error deleting account: $e');
+    // If error is due to recent authentication required, rethrow to handle re-authentication
+    if (e is FirebaseAuthException && e.code == 'requires-recent-login') {
+      rethrow;
+    }
+    return false;
   }
 }
