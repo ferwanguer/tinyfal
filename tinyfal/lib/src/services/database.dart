@@ -46,6 +46,14 @@ Future<void> updateUserPreferenceField(
   await users.doc(userId).update({field: value});
 }
 
+// UPDATE NOTIFICATION PREFERENCES
+Future<void> updateNotificationPreferences(
+  String userId,
+  Map<String, dynamic> notificationSettings,
+) async {
+  await users.doc(userId).update(notificationSettings);
+}
+
 Future<void> createUserPreference(String userId, String email) async {
   DocumentSnapshot doc = await users.doc(userId).get();
 
@@ -67,7 +75,15 @@ Future<void> createUserPreference(String userId, String email) async {
       }
     }
 
-    await users.doc(userId).set({"fcmToken": token ?? "", "email": email});
+    await users.doc(userId).set({
+      "fcmToken": token ?? "",
+      "email": email,
+      "notificationsEnabled": true,
+      "cpuNotificationsEnabled": false,
+      "ramNotificationsEnabled": false,
+      "cpuThreshold": 10.0,
+      "ramThreshold": 85.0,
+    });
   }
 }
 
