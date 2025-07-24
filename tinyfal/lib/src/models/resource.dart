@@ -797,7 +797,7 @@ class Status {
   /// DOCKER DATA
   Map<String, dynamic>? get dockerEngine {
     final dockerList = getByName('docker');
-    developer.log('Docker data: $dockerList', name: 'resource.dart:802');
+
     return dockerList.isNotEmpty ? dockerList.first : null;
   }
 
@@ -962,6 +962,7 @@ class Status {
   /// TCP CONNECTION DATA
   Map<String, dynamic>? get netstat {
     final netstatList = getByName('netstat');
+    developer.log('Netstat data: $netstatList', name: 'resource.dart:965');
     return netstatList.isNotEmpty ? netstatList.first : null;
   }
 

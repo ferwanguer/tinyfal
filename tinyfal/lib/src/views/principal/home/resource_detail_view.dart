@@ -74,6 +74,13 @@ class _ResourceDetailViewState extends State<ResourceDetailView> {
   int get _idleProcesses => _status?.idleProcesses ?? 0;
   int get _zombieProcesses => _status?.zombieProcesses ?? 0;
 
+  // Network connection data
+  int get _tcpEstablished => _status?.tcpEstablished ?? 0;
+  int get _tcpListen => _status?.tcpListen ?? 0;
+  int get _tcpTimeWait => _status?.tcpTimeWait ?? 0;
+  int get _tcpCloseWait => _status?.tcpCloseWait ?? 0;
+  int get _udpSockets => _status?.udpSockets ?? 0;
+
   Color _getUsageColor(int usage) {
     if (usage < 30) return Colors.green[400]!;
     if (usage < 70) return Colors.orange[400]!;
@@ -205,6 +212,10 @@ class _ResourceDetailViewState extends State<ResourceDetailView> {
 
             // Process Details
             _buildProcessDetailsCard(),
+            SizedBox(height: 16),
+
+            // Network Connections
+            _buildNetworkConnectionsCard(),
             SizedBox(height: 16),
 
             // System Information
@@ -732,6 +743,177 @@ class _ResourceDetailViewState extends State<ResourceDetailView> {
             style: TextStyle(fontSize: 10, color: Colors.grey[500]),
           ),
       ],
+    );
+  }
+
+  Widget _buildNetworkConnectionsCard() {
+    // Don't show if no TCP/UDP data available
+    if (_tcpEstablished == 0 &&
+        _tcpListen == 0 &&
+        _tcpTimeWait == 0 &&
+        _tcpCloseWait == 0 &&
+        _udpSockets == 0) {
+      return SizedBox.shrink();
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey[200]!,
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.network_check, color: Colors.blue[600], size: 20),
+              SizedBox(width: 8),
+              Text(
+                "Network Connections",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[800],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 20),
+
+          // TCP Connections section
+          Text(
+            "TCP Connections",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[700],
+            ),
+          ),
+          SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildConnectionStat(
+                  "Established",
+                  "$_tcpEstablished",
+                  Colors.green[600]!,
+                  "Active connections",
+                ),
+              ),
+              Expanded(
+                child: _buildConnectionStat(
+                  "Listening",
+                  "$_tcpListen",
+                  Colors.blue[600]!,
+                  "Accepting connections",
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildConnectionStat(
+                  "Time Wait",
+                  "$_tcpTimeWait",
+                  Colors.orange[600]!,
+                  "Closing connections",
+                ),
+              ),
+              Expanded(
+                child: _buildConnectionStat(
+                  "Close Wait",
+                  "$_tcpCloseWait",
+                  Colors.red[600]!,
+                  "Waiting to close",
+                ),
+              ),
+            ],
+          ),
+
+          if (_udpSockets > 0) ...[
+            SizedBox(height: 20),
+
+            // UDP Sockets section
+            Text(
+              "UDP Sockets",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[700],
+              ),
+            ),
+            SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildConnectionStat(
+                    "UDP Sockets",
+                    "$_udpSockets",
+                    Colors.purple[600]!,
+                    "Active UDP connections",
+                  ),
+                ),
+                Expanded(child: Container()), // Empty space
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildConnectionStat(
+    String label,
+    String value,
+    Color color,
+    String description,
+  ) {
+    return Container(
+      padding: EdgeInsets.all(12),
+      margin: EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[800],
+            ),
+          ),
+          SizedBox(height: 2),
+          Text(
+            description,
+            style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+          ),
+        ],
+      ),
     );
   }
 
