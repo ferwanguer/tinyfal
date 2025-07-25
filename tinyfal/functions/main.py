@@ -16,6 +16,10 @@ from mailing.mailing import mailto, render_resource_created_email
 # Import notification functionality
 from notifications.notifications import check_and_send_threshold_alerts
 
+# Import models functionality
+from models.models import extract_available_memory_percent, extract_cpu_available_percent
+
+
 # For cost control, you can set the maximum number of containers that can be
 # running at the same time. This helps mitigate the impact of unexpected
 # traffic spikes by instead downgrading performance. This limit is a per-function
@@ -122,6 +126,31 @@ def ingest(req: https_fn.Request) -> https_fn.Response:
         )
     
     logger.info("DATA RECEIVED: %s", request_data)
+    
+    # Extract CPU and RAM available percentages from the metrics data
+    metrics_data = request_data.get('metrics', [])
+    
+    # Extract available memory percentage
+    available_memory_percent = extract_available_memory_percent(metrics_data)
+    if available_memory_percent is None:
+        logger.error(f"Failed to extract available memory percentage for user_id: {user_id}, resource_id: {resource_id}")
+        return https_fn.Response(
+            json.dumps({"error": "Unable to extract available memory percentage from metrics data"}),
+            status=200,
+            headers={"Content-Type": "application/json"}
+        )
+    
+    # Extract available CPU percentage
+    available_cpu_percent = extract_cpu_available_percent(metrics_data)
+    if available_cpu_percent is None:
+        logger.error(f"Failed to extract available CPU percentage for user_id: {user_id}, resource_id: {resource_id}")
+        return https_fn.Response(
+            json.dumps({"error": "Unable to extract available CPU percentage from metrics data"}),
+            status=200,
+            headers={"Content-Type": "application/json"}
+        )
+    
+    logger.info(f"Successfully extracted metrics for user_id: {user_id}, resource_id: {resource_id} - Memory: {available_memory_percent}%, CPU: {available_cpu_percent}%")
     # user_id and resource_id are already determined from token lookup above
     # Create document path
     doc_path = f"users/{user_id}/resources/{resource_id}"
@@ -146,7 +175,7 @@ def ingest(req: https_fn.Request) -> https_fn.Response:
                 time_diff = (current_time - last_update).total_seconds()
                 
                 # If last update was within 60 seconds, don't update
-                if time_diff < 60:
+                if time_diff < 5:
                     logger.info(f"Data received but not logged for user_id: {user_id}, resource_id: {resource_id}. Last update was {time_diff:.1f} seconds ago (less than 60 seconds)")
                     
                     return https_fn.Response(
@@ -180,7 +209,8 @@ def ingest(req: https_fn.Request) -> https_fn.Response:
                     user_id=user_id,
                     resource_id=resource_id,
                     resource_name=resource_name,
-                    metrics=request_data,
+                    available_cpu_percent=available_cpu_percent,
+                    available_memory_percent=available_memory_percent,
                     user_settings=user_settings
                 )
         except Exception as e:
@@ -271,96 +301,3 @@ def on_resource_created(event: firestore_fn.Event[firestore_fn.DocumentSnapshot 
     except Exception as e:
         logger.error(f"Error in on_resource_created: {str(e)}")
 
-
-@https_fn.on_request()
-def test_notification(req: https_fn.Request) -> https_fn.Response:
-    """
-    Test function to manually trigger a notification.
-    This is useful for testing the notification system.
-    """
-    
-    if req.method != 'POST':
-        return https_fn.Response(
-            json.dumps({"error": "Only POST requests are allowed"}),
-            status=405,
-            headers={"Content-Type": "application/json"}
-        )
-    
-    try:
-        request_data = req.get_json()
-        user_id = request_data.get('user_id')
-        notification_type = request_data.get('type', 'cpu')  # 'cpu' or 'ram'
-        
-        if not user_id:
-            return https_fn.Response(
-                json.dumps({"error": "user_id is required"}),
-                status=400,
-                headers={"Content-Type": "application/json"}
-            )
-        
-        # Get user settings
-        db = firestore.client()
-        user_doc = db.collection('users').document(user_id).get()
-        
-        if not user_doc.exists:
-            return https_fn.Response(
-                json.dumps({"error": "User not found"}),
-                status=404,
-                headers={"Content-Type": "application/json"}
-            )
-        
-        user_settings = user_doc.to_dict()
-        fcm_token = user_settings.get('fcmToken')
-        
-        if not fcm_token:
-            return https_fn.Response(
-                json.dumps({"error": "No FCM token found for user"}),
-                status=400,
-                headers={"Content-Type": "application/json"}
-            )
-        
-        # Send test notification
-        from notifications.notifications import send_cpu_threshold_notification, send_ram_threshold_notification
-        
-        if notification_type == 'cpu':
-            success = send_cpu_threshold_notification(
-                user_id=user_id,
-                resource_name="Test Server",
-                current_cpu=5.0,
-                threshold=10.0,
-                fcm_token=fcm_token
-            )
-        else:
-            success = send_ram_threshold_notification(
-                user_id=user_id,
-                resource_name="Test Server",
-                current_ram=90.0,
-                threshold=85.0,
-                fcm_token=fcm_token
-            )
-        
-        if success:
-            return https_fn.Response(
-                json.dumps({"success": True, "message": f"Test {notification_type} notification sent successfully"}),
-                status=200,
-                headers={"Content-Type": "application/json"}
-            )
-        else:
-            return https_fn.Response(
-                json.dumps({"error": "Failed to send notification"}),
-                status=500,
-                headers={"Content-Type": "application/json"}
-            )
-            
-    except Exception as e:
-        logger.error(f"Error in test_notification: {str(e)}")
-        return https_fn.Response(
-            json.dumps({"error": f"Test notification failed: {str(e)}"}),
-            status=500,
-            headers={"Content-Type": "application/json"}
-        )
-
-
-# @https_fn.on_request()
-# def on_request_example(req: https_fn.Request) -> https_fn.Response:
-#     return https_fn.Response("Hello world!")

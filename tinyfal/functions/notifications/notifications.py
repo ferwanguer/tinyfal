@@ -2,6 +2,9 @@ from firebase_functions import firestore_fn, logger
 from firebase_admin import firestore, messaging
 from typing import Dict, Any
 
+# Import our models functions
+from models.models import extract_cpu_available_percent, extract_available_memory_percent
+
 def send_cpu_threshold_notification(
     user_id: str, 
     resource_name: str, 
@@ -140,18 +143,19 @@ def check_and_send_threshold_alerts(
     user_id: str, 
     resource_id: str, 
     resource_name: str, 
-    metrics: Dict[str, Any],
+    available_cpu_percent: int,
+    available_memory_percent: int,
     user_settings: Dict[str, Any]
 ) -> None:
     """
     Checks resource metrics against user-defined thresholds and sends alerts if needed.
-    Includes rate limiting to prevent notification spam.
     
     Args:
         user_id: The user's unique identifier
         resource_id: The resource's unique identifier
         resource_name: The name of the resource being monitored
-        metrics: Dictionary containing the latest metrics data
+        available_cpu_percent: Already extracted CPU available percentage
+        available_memory_percent: Already extracted memory available percentage
         user_settings: Dictionary containing user notification preferences
     """
     try:
@@ -161,76 +165,41 @@ def check_and_send_threshold_alerts(
             logger.warning(f"No FCM token found for user: {user_id}")
             return
         
+        logger.info(f"Checking thresholds for user {user_id}, resource {resource_id} ({resource_name})")
+
         # Check if notifications are enabled
         notifications_enabled = user_settings.get('notificationsEnabled', True)
         if not notifications_enabled:
             logger.info(f"Notifications disabled for user: {user_id}")
             return
         
-        # Get Firestore client for rate limiting checks
-        db = firestore.client()
-        current_time = firestore.SERVER_TIMESTAMP
-        
-        # Rate limiting: Don't send notifications for the same resource within 10 minutes
-        rate_limit_minutes = 10
-        
         # Check CPU threshold
         cpu_notifications_enabled = user_settings.get('cpuNotificationsEnabled', False)
         if cpu_notifications_enabled:
             cpu_threshold = user_settings.get('cpuThreshold', 10.0)  # Default 10%
-            current_cpu = metrics.get('cpu_available')
             
-            if current_cpu is not None and current_cpu < cpu_threshold:
-                # Check rate limiting for CPU alerts
-                last_cpu_alert_ref = db.collection('users').document(user_id).collection('last_alerts').document(f"{resource_id}_cpu")
-                last_alert_doc = last_cpu_alert_ref.get()
-                
-                should_send = True
-                if last_alert_doc.exists:
-                    last_alert_time = last_alert_doc.to_dict().get('timestamp')
-                    if last_alert_time:
-                        # Calculate time difference (this is simplified - in production you'd want proper time comparison)
-                        # For now, we'll use the rate limiting from the main ingest function (60 seconds)
-                        should_send = False
-                        logger.info(f"CPU alert rate limited for resource {resource_name}")
-                
-                if should_send:
-                    logger.info(f"CPU threshold breached for resource {resource_name}: {current_cpu}% < {cpu_threshold}%")
-                    success = send_cpu_threshold_notification(
-                        user_id, resource_name, current_cpu, cpu_threshold, fcm_token
-                    )
-                    if success:
-                        # Update last alert timestamp
-                        last_cpu_alert_ref.set({'timestamp': current_time, 'value': current_cpu})
+            logger.info(f"CPU available: {available_cpu_percent}% for resource {resource_name}")
+            
+            if available_cpu_percent < cpu_threshold:
+                logger.info(f"CPU threshold breached for resource {resource_name}: {available_cpu_percent}% < {cpu_threshold}%")
+                send_cpu_threshold_notification(
+                    user_id, resource_name, available_cpu_percent, cpu_threshold, fcm_token
+                )
         
         # Check RAM threshold
         ram_notifications_enabled = user_settings.get('ramNotificationsEnabled', False)
         if ram_notifications_enabled:
             ram_threshold = user_settings.get('ramThreshold', 85.0)  # Default 85%
-            current_ram = metrics.get('ram_usage_percent')
             
-            if current_ram is not None and current_ram > ram_threshold:
-                # Check rate limiting for RAM alerts
-                last_ram_alert_ref = db.collection('users').document(user_id).collection('last_alerts').document(f"{resource_id}_ram")
-                last_alert_doc = last_ram_alert_ref.get()
-                
-                should_send = True
-                if last_alert_doc.exists:
-                    last_alert_time = last_alert_doc.to_dict().get('timestamp')
-                    if last_alert_time:
-                        # Calculate time difference (this is simplified - in production you'd want proper time comparison)
-                        # For now, we'll use the rate limiting from the main ingest function (60 seconds)
-                        should_send = False
-                        logger.info(f"RAM alert rate limited for resource {resource_name}")
-                
-                if should_send:
-                    logger.info(f"RAM threshold breached for resource {resource_name}: {current_ram}% > {ram_threshold}%")
-                    success = send_ram_threshold_notification(
-                        user_id, resource_name, current_ram, ram_threshold, fcm_token
-                    )
-                    if success:
-                        # Update last alert timestamp
-                        last_ram_alert_ref.set({'timestamp': current_time, 'value': current_ram})
+            # Convert available memory to usage percentage
+            current_ram_usage = 100 - available_memory_percent
+            logger.info(f"RAM usage: {current_ram_usage}% for resource {resource_name}")
+            
+            if current_ram_usage > ram_threshold:
+                logger.info(f"RAM threshold breached for resource {resource_name}: {current_ram_usage}% > {ram_threshold}%")
+                send_ram_threshold_notification(
+                    user_id, resource_name, current_ram_usage, ram_threshold, fcm_token
+                )
                 
     except Exception as e:
         logger.error(f"Error checking thresholds for user {user_id}, resource {resource_id}: {str(e)}")

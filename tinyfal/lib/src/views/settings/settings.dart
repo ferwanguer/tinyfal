@@ -213,8 +213,8 @@ class _SettingsState extends State<Settings> {
                                         currentPreferences?.cpuThreshold ??
                                         10.0,
                                     min: 1.0,
-                                    max: 50.0,
-                                    divisions: 49,
+                                    max: 100.0,
+                                    divisions: 99,
                                     label:
                                         '${(currentPreferences?.cpuThreshold ?? 10.0).round()}%',
                                     onChanged: (double value) {
@@ -271,7 +271,7 @@ class _SettingsState extends State<Settings> {
                                     value:
                                         currentPreferences?.ramThreshold ??
                                         85.0,
-                                    min: 50.0,
+                                    min: 10.0,
                                     max: 95.0,
                                     divisions: 45,
                                     label:
